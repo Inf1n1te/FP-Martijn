@@ -146,7 +146,7 @@ findEdgesAtNode (l, _, _) g
 -}
 findNeighboringNodes :: Node -> Graph -> [Node]
 findNeighboringNodes n@(l, x, t) g 	| directed g == Undirected 	= ns1
-									| otherwise					= ns2
+					| otherwis			= ns2
 	where 	es = findEdgesAtNode n g 
 		n1s = map s1 (filter (\(el1,_,_,_,_) -> el1 /= l) es)
 		n2s = map s2 (filter (\(_,el2,_,_,_) -> el2 /= l) es)
@@ -239,7 +239,21 @@ renameNodeInEdge (oldL, _, _) newL (el1, el2, color, weight, thickness)
     | oldL == el1 = (newL, el2, color, weight, thickness)
     | oldL == el2 = (el1, newL, color, weight, thickness)
     | otherwise   = (el1, el2, color, weight, thickness)
-        
+
+{- | Check whether a path exists between the two given nodes in the given graph
+-}
+
+hasPath :: Graph -> Node -> Node -> Bool
+hasPath g n1 n2 | n1 == n2	= True
+		| otherwise 	= True `elem` (map (\x -> hasPath g' x n2) (findNeighboringNodes n1 g))
+    where
+    	g' = removeNode n1 g 
+
+
+{- | Check whether a graph is strongly connected; that is, when a graph when all paths are traversed from a random given node, it can reach all other nodes.
+-}
+isStronglyConnected :: Graph -> Bool
+
 
 {- | The eventloop
 This function uses the current state and an In event to determine
@@ -345,7 +359,7 @@ eventloop ps@(ProgramState "v" (Just node1s) _ g) (_)
 {- | If 'x' has been pressed, a node selected and a new key stroke
 comes in, the color of the selected node is changed to red
 -}
-eventloop ps@(ProgramState "x" _ _ g) (_)
+eventloop ps@(ProgramState _ _ _ g) (InGraphs( Key "x"))
     = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Reset all colors\n"])
     where
         g' = resetColor g
@@ -366,6 +380,19 @@ eventloop ps@(ProgramState "n" _ _ g) (InGraphs (Mouse (Click _) p))
         g' = g {nodes=(newNode:allNodes)}
          
          
+{- | If 'p' has been pressed, a node selected and a new key stroke
+comes in, the color of the selected node is changed to red
+-}
+eventloop ps@(ProgramState "p" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
+    | nodeAtPosM == Nothing 	= (ps,[])
+    | otherwise 		= (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check path existence:\n"])
+    where
+	nodeAtPosM 	= onNode (nodes g) p
+	(Just nodeM) 	= nodeAtPosM 
+	g' 	| hasPath g node1s nodeM 	= colorNode (colorNode g Green nodeM) Green node1s
+		| otherwise 			= colorNode (colorNode g Red nodeM) Red node1s
+
+
 {- | Buffer the last node selected if it doesn't 
 trigger an event on first spot
 -}
