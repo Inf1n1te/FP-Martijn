@@ -81,6 +81,7 @@ instructions = [ "Instructions"
 			   , "Press 'c', click on a node to colour it red"
 			   , "Press 'v', click on a node to colour its neighbours blue"
 			   , "Press 'x', to reset all colours in the graph"
+			   , "Press 'p', click on two nodes to show whether there is a path between those nodes."
                , "Press 'esc' to abort the current operation and start another"  
                ]                             
           
