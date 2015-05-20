@@ -139,16 +139,18 @@ findEdgesAtNode (l, _, _) g
         allEdges = edges g
       
 
-{- | Find all nodes that are neighbors of a given node
+{- | Find all nodes that are neighbours of a given node
 -}
 findNeighboringNodes :: Node -> Graph -> [Node]
-findNeighboringNodes n@(l, x, t) g = ns1
+findNeighboringNodes n@(l, x, t) g 	| directed g == Undirected 	= ns1
+									| otherwise					= ns2
 	where 	es = findEdgesAtNode n g 
 		n1s = map s1 (filter (\(el1,_,_,_,_) -> el1 /= l) es)
 		n2s = map s2 (filter (\(_,el2,_,_,_) -> el2 /= l) es)
 		s1 (l1,_,_,_,_) = l1
 		s2 (_,l2,_,_,_) = l2
 		ns1 = filter (\(l1,_,_) -> elem l1 (n1s++n2s)) (nodes g)
+		ns2 = filter (\(l1,_,_) -> elem l1 n2s) (nodes g)
 
 
 {- | Finds all edges that are between two nodes
