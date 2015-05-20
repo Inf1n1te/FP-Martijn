@@ -176,21 +176,30 @@ edgeRunsFromNodeToNode :: Node -> Node -> Edge -> Bool
 edgeRunsFromNodeToNode (l1, _, _) (l2, _, _) (el1, el2, _, _, _)
     = (l1 == el1) && (l2 == el2)
 
+	
 {- | Recolors a node in graph g with the color c
 -}
 colorNode :: Graph -> Color -> Node -> Graph
 colorNode g c n@(l, x, _) = (flip addNode) (l,x,c) $ removeNode n g
 
 
-{- | Recolors all nodes in graph g orange
+{- | Colour an edge with specified colour.
 -}
-colorAllNodes :: Graph -> Graph
-colorAllNodes g = g'
+colorEdge :: Graph -> Color -> Edge -> Graph
+colorEdge g c e@(l1, l2, _, x, y) = (flip addEdge) (l1, l2, c, x, y) $ removeEdge e g
+
+
+{- | Resets all colors in the given graph
+-}
+resetColor :: Graph -> Graph
+resetColor g = g''
     where
+    	g''= foldl (ce Orange) g' (edges g')
+	ce c g n = colorEdge g c n
 	g' = foldl (cn Orange) g (nodes g)
 	cn c g n = colorNode g c n
-
-
+       
+		
 {- | Removes the node from the graph
 -}
 removeNode :: Node -> Graph -> Graph
@@ -328,6 +337,16 @@ eventloop ps@(ProgramState "v" (Just node1s) _ g) (_)
     where
         g' = foldl (cn Blue) g (findNeighboringNodes node1s g)
 	cn c g n = colorNode g c n
+
+
+{- | If 'x' has been pressed, a node selected and a new key stroke
+comes in, the color of the selected node is changed to red
+-}
+eventloop ps@(ProgramState "x" _ _ g) (_)
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Reset all colors\n"])
+    where
+        g' = resetColor g
+
 
 {- | If 'n' has been pressed and the mouse has 
 clicked at a position where there is no node yet,
