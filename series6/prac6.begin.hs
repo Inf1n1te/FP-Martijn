@@ -78,6 +78,9 @@ instructions = [ "Instructions"
                , "Press 'd', click on a node to delete the node"
                , "Press 'w', click on two nodes and press a number to weight the edge in between"
                , "Press 'f', click on two nodes to delete an edge"
+			   , "Press 'c', click on a node to colour it red"
+			   , "Press 'v', click on a node to colour its neighbours blue"
+			   , "Press 'x', to reset all colours in the graph"
                , "Press 'esc' to abort the current operation and start another"  
                ]                             
           
