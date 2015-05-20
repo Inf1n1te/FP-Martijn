@@ -181,7 +181,16 @@ edgeRunsFromNodeToNode (l1, _, _) (l2, _, _) (el1, el2, _, _, _)
 colorNode :: Graph -> Color -> Node -> Graph
 colorNode g c n@(l, x, _) = (flip addNode) (l,x,c) $ removeNode n g
 
-        
+
+{- | Recolors all nodes in graph g orange
+-}
+colorAllNodes :: Graph -> Graph
+colorAllNodes g = g'
+    where
+	g' = foldl (cn Orange) g (nodes g)
+	cn c g n = colorNode g c n
+
+
 {- | Removes the node from the graph
 -}
 removeNode :: Node -> Graph -> Graph
