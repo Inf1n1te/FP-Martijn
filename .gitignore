@@ -18,3 +18,4 @@ cabal.sandbox.config
 *.sh
 StandardWebpage/
 StandardWebpage_v2/
+Old_Files/
