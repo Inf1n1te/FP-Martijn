@@ -176,12 +176,19 @@ edgeRunsFromNodeToNode :: Node -> Node -> Edge -> Bool
 edgeRunsFromNodeToNode (l1, _, _) (l2, _, _) (el1, el2, _, _, _)
     = (l1 == el1) && (l2 == el2)
 
+	
 {- | Recolors a node in graph g with the color c
 -}
 colorNode :: Graph -> Color -> Node -> Graph
 colorNode g c n@(l, x, _) = (flip addNode) (l,x,c) $ removeNode n g
 
         
+{- | Colour an edge with specified colour.
+-}
+colourEdge :: Graph -> Color -> Edge -> Graph
+colourEdge g c e@(l1, l2, _, x, y) = (flip addEdge) (l1, l2, c, x, y) $ removeEdge e g
+		
+		
 {- | Removes the node from the graph
 -}
 removeNode :: Node -> Graph -> Graph
