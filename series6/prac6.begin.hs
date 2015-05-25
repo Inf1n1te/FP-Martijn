@@ -91,7 +91,9 @@ instructions = [ "Instructions"
 -}
 automaticPossibleLabels :: [Label]
 automaticPossibleLabels = ['a'..'z'] ++ ['A'..'Z'] ++ ['0'..'9']
-       
+      
+
+allColors = [Red,Blue,Green,Purple,Grey,Yellow,Orange,Black,White]
        
 {- | A function to determine which label can be used next
 -}         
@@ -411,13 +413,35 @@ eventloop ps@(ProgramState "p" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
 		| otherwise 			= colorNode (colorNode g Red nodeM) Red node1s
 
 
-{- | If 's' has been pressed, all nodes and edges are colored green if the graph is strongly connected. Else they is colored red.
+{- | If 'q' has been pressed, all nodes and edges are colored green if the graph is strongly connected. Else they is colored red.
 -}
 eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
     = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check if strongly connected."])
     where
 	g' 	| isStronglyConnected g = setColor Green g
 		| otherwise		= setColor Red g
+
+
+{- | If 'w' has been pressed, all individual graphs are marked with a color.
+-}
+eventloop ps@(ProgramState "w" _ _ g) (_)
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Color code subgraphs."])
+    where
+	g' = colorConnectedGraphs allColors g (nodes g)
+
+
+colorConnectedGraphs ::	[Color] ->  -- list of colors to give the graphs in order
+			Graph ->  -- Graph to change
+			[Node] ->  -- nodes still to look for subgraphs in
+			Graph
+colorConnectedGraphs _ g [] = g
+colorConnectedGraphs [] g _ = g
+colorConnectedGraphs (color:cs) g (n:ns) = colorConnectedGraphs cs g' nns
+	where
+		nns = filter (\x -> x `elem` nodesUnreachable n g) ns
+		ons = filter (\y -> y `notElem` nns) ns
+		g' = foldl (cn color) g ons
+		cn c g n = colorNode g c n
 
 
 {- | Buffer the last node selected if it doesn't 
