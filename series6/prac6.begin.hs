@@ -82,6 +82,7 @@ instructions = [ "Instructions"
 			   , "Press 'v', click on a node to colour its neighbours blue"
 			   , "Press 'x', to reset all colours in the graph"
 			   , "Press 'p', click on two nodes to show whether there is a path between those nodes."
+			   , "Press 'q' and click to confirm, to see if the graph is strongly connected. all nodes are colored green if this is the case, else they will be colored red."
                , "Press 'esc' to abort the current operation and start another"  
                ]                             
           
@@ -147,7 +148,7 @@ findEdgesAtNode (l, _, _) g
 -}
 findNeighboringNodes :: Node -> Graph -> [Node]
 findNeighboringNodes n@(l, x, t) g 	| directed g == Undirected 	= ns1
-					| otherwis			= ns2
+					| otherwise			= ns2
 	where 	es = findEdgesAtNode n g 
 		n1s = map s1 (filter (\(el1,_,_,_,_) -> el1 /= l) es)
 		n2s = map s2 (filter (\(_,el2,_,_,_) -> el2 /= l) es)
@@ -196,11 +197,14 @@ colorEdge g c e@(l1, l2, _, x, y) = (flip addEdge) (l1, l2, c, x, y) $ removeEdg
 {- | Resets all colors in the given graph
 -}
 resetColor :: Graph -> Graph
-resetColor g = g''
+resetColor g = setColor Orange g
+
+setColor :: Color -> Graph -> Graph
+setColor color g = g''
     where
-    	g''= foldl (ce Orange) g' (edges g')
+    	g''= foldl (ce color) g' (edges g')
 	ce c g n = colorEdge g c n
-	g' = foldl (cn Orange) g (nodes g)
+	g' = foldl (cn color) g (nodes g)
 	cn c g n = colorNode g c n
        
 		
@@ -254,7 +258,21 @@ hasPath g n1 n2 | n1 == n2	= True
 {- | Check whether a graph is strongly connected; that is, when a graph when all paths are traversed from a random given node, it can reach all other nodes.
 -}
 isStronglyConnected :: Graph -> Bool
+isStronglyConnected g@(Graph{nodes=(ns)}) = null (isStronglyConnectedPriv ns g)
 
+{- private function that does the work; function above is a nice wrapper -}
+isStronglyConnectedPriv :: [Node] -> Graph -> [Node]
+isStronglyConnectedPriv [] _ = []
+isStronglyConnectedPriv (n:ns) g = nodes (nodesUnreachable n g) ++ isStronglyConnectedPriv ns g
+
+{- | Returns a graph with all nodes removed that are reachale from the given node -}
+nodesUnreachable :: Node -> Graph -> Graph
+nodesUnreachable n g 	| null (adjns)		= g'
+			| n `elem` (nodes g) 	= foldr (nodesUnreachable) g' adjns
+			| otherwise 		= g -- node could have been removed already by other branch
+	where	adjns 	= findNeighboringNodes n g
+		g'	= removeNodeWithAdjoiningEdges n g
+		
 
 {- | The eventloop
 This function uses the current state and an In event to determine
@@ -357,8 +375,7 @@ eventloop ps@(ProgramState "v" (Just node1s) _ g) (_)
 	cn c g n = colorNode g c n
 
 
-{- | If 'x' has been pressed, a node selected and a new key stroke
-comes in, the color of the selected node is changed to red
+{- | If 'x' has been pressed, all nodes' colors is reset to orange
 -}
 eventloop ps@(ProgramState _ _ _ g) (InGraphs( Key "x"))
     = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Reset all colors\n"])
@@ -392,6 +409,15 @@ eventloop ps@(ProgramState "p" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
 	(Just nodeM) 	= nodeAtPosM 
 	g' 	| hasPath g node1s nodeM 	= colorNode (colorNode g Green nodeM) Green node1s
 		| otherwise 			= colorNode (colorNode g Red nodeM) Red node1s
+
+
+{- | If 's' has been pressed, all nodes and edges are colored green if the graph is strongly connected. Else they is colored red.
+-}
+eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check if strongly connected."])
+    where
+	g' 	| isStronglyConnected g = setColor Green g
+		| otherwise		= setColor Red g
 
 
 {- | Buffer the last node selected if it doesn't 
