@@ -276,6 +276,20 @@ nodesUnreachable n g 	| null (adjns)		= g'
 		g'	= removeNodeWithAdjoiningEdges n g
 		
 
+colorConnectedGraphs ::	[Color] ->  -- list of colors to give the graphs in order
+			Graph ->  -- Graph to change
+			[Node] ->  -- nodes still to look for subgraphs in
+			Graph
+colorConnectedGraphs _ g [] = g
+colorConnectedGraphs [] g _ = g
+colorConnectedGraphs (color:cs) g (n:ns) = colorConnectedGraphs cs g' nns
+	where
+		nns = filter (\x -> x `elem` (nodes (nodesUnreachable n g))) ns
+		ons = filter (\y -> y `notElem` nns) ns
+		g' = foldl (cn color) g ons
+		cn c g n = colorNode g c n
+
+
 {- | The eventloop
 This function uses the current state and an In event to determine
 the new state and what changes should be made as a list of Out events.
@@ -424,24 +438,12 @@ eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
 
 {- | If 'w' has been pressed, all individual graphs are marked with a color.
 -}
-eventloop ps@(ProgramState "w" _ _ g) (_)
+eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "y"))
     = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Color code subgraphs."])
     where
 	g' = colorConnectedGraphs allColors g (nodes g)
 
 
-colorConnectedGraphs ::	[Color] ->  -- list of colors to give the graphs in order
-			Graph ->  -- Graph to change
-			[Node] ->  -- nodes still to look for subgraphs in
-			Graph
-colorConnectedGraphs _ g [] = g
-colorConnectedGraphs [] g _ = g
-colorConnectedGraphs (color:cs) g (n:ns) = colorConnectedGraphs cs g' nns
-	where
-		nns = filter (\x -> x `elem` nodesUnreachable n g) ns
-		ons = filter (\y -> y `notElem` nns) ns
-		g' = foldl (cn color) g ons
-		cn c g n = colorNode g c n
 
 
 {- | Buffer the last node selected if it doesn't 
