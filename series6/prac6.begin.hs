@@ -282,10 +282,10 @@ colorConnectedGraphs ::	[Color] ->  -- list of colors to give the graphs in orde
 			Graph
 colorConnectedGraphs _ g [] = g
 colorConnectedGraphs [] g _ = g
-colorConnectedGraphs (color:cs) g (n:ns) = colorConnectedGraphs cs g' nns
+colorConnectedGraphs (color:cs) g z@(n:ns) = colorConnectedGraphs cs g' nns
 	where
 		nns = filter (\x -> x `elem` (nodes (nodesUnreachable n g))) ns
-		ons = filter (\y -> y `notElem` nns) ns
+		ons = filter (\y -> y `notElem` nns) z
 		g' = foldl (cn color) g ons
 		cn c g n = colorNode g c n
 
@@ -430,7 +430,7 @@ eventloop ps@(ProgramState "p" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
 {- | If 'q' has been pressed, all nodes and edges are colored green if the graph is strongly connected. Else they is colored red.
 -}
 eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
-    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check if strongly connected."])
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check if strongly connected.\n"])
     where
 	g' 	| isStronglyConnected g = setColor Green g
 		| otherwise		= setColor Red g
@@ -439,7 +439,7 @@ eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
 {- | If 'w' has been pressed, all individual graphs are marked with a color.
 -}
 eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "y"))
-    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Color code subgraphs."])
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Color code subgraphs.\n"])
     where
 	g' = colorConnectedGraphs allColors g (nodes g)
 
