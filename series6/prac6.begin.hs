@@ -1,7 +1,7 @@
 import Prelude
 import Data.Maybe
 import Data.Char (isDigit)
-import Data.List ((\\), delete)
+import Data.List
 
 
 import Eventloop.EventloopCore
@@ -50,7 +50,7 @@ data ProgramState
 {- | Begingraph
    This is the start state of the graph
 -}
-beginGraph = Graph allNodes allEdges Undirected Unweighted
+beginGraph = Graph allNodes allEdges Directed Unweighted
            where
             allNodes = [ ('a', (50, 50), Red)
                        , ('b', (150, 50), Blue)
@@ -104,7 +104,15 @@ nextLabel nodes
     where
         currentLabels = map (\(l, _, _) -> l) nodes
         leftOverLabels = automaticPossibleLabels \\ currentLabels
-        
+
+
+nextColor :: Graph -> Color
+nextColor g 	| null leftOverColors = error "no leftover colors"
+		| otherwise = head leftOverColors
+	where
+		currentColors = map (\(_,_,c,_,_) -> c) (edges g)
+		leftOverColors = allColors \\ (nub currentColors)
+
                 
 {- | Add a node to the graph
 -}
@@ -194,6 +202,13 @@ colorNode g c n@(l, x, _) = (flip addNode) (l,x,c) $ removeNode n g
 -}
 colorEdge :: Graph -> Color -> Edge -> Graph
 colorEdge g c e@(l1, l2, _, x, y) = (flip addEdge) (l1, l2, c, x, y) $ removeEdge e g
+
+
+{- | Color a path in the specified color -}
+colorPath :: Color -> Graph -> [Edge] -> Graph
+colorPath _ g [] 	= g 
+colorPath c g (e:es)	= colorPath c g' es
+	where	g' = colorEdge g c e
 
 
 {- | Resets all colors in the given graph
@@ -288,6 +303,25 @@ colorConnectedGraphs (color:cs) g z@(n:ns) = colorConnectedGraphs cs g' nns
 		ons = filter (\y -> y `notElem` nns) z
 		g' = foldl (cn color) g ons
 		cn c g n = colorNode g c n
+
+nodeSeqToEdgeSeq :: Graph -> [Node] -> [Edge]
+nodeSeqToEdgeSeq g [] = error "bla"
+nodeSeqToEdgeSeq g [n] = []
+nodeSeqToEdgeSeq g (n1:n2:ns) = edge : nodeSeqToEdgeSeq g (n2:ns)
+	where (Just edge) = findEdgeFromNodeToNode n1 n2 g
+
+findAllPaths :: Graph -> Node -> Node -> [[Node]]
+findAllPaths g nb ne = filter (\x -> elem ne x) (markAllPaths g ne nb)
+		
+
+markAllPaths :: Graph -> Node -> Node -> [[Node]]
+markAllPaths g ne nb
+	| nb == ne 				= [[nb]]
+	| null (findNeighboringNodes nb g) 	= [[]]
+	| otherwise				= map (\x -> [nb] ++ x) paths
+		where	g' = removeNodeWithAdjoiningEdges nb g
+			nbs = findNeighboringNodes nb g
+			paths = concat $ map (markAllPaths g' ne) nbs
 
 
 {- | The eventloop
@@ -443,6 +477,20 @@ eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "y"))
     where
 	g' = colorConnectedGraphs allColors g (nodes g)
 
+
+{- | If 'u' has been pressed, a node selected and a new key stroke
+comes in, the color of the selected node is changed to red
+-}
+eventloop ps@(ProgramState "u" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
+    | nodeAtPosM == Nothing 	= (ps,[])
+    | otherwise 		= (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Mark all " ++ show ess ++ " paths:\n"])
+    where
+	nodeAtPosM 	= onNode (nodes g) p
+	(Just nodeM) 	= nodeAtPosM 
+	ess = map (nodeSeqToEdgeSeq g) (findAllPaths g node1s nodeM)
+	g' = foldl (\z (x,y) -> colorPath x z y) g (zip allColors ess) 
+	cn c g n = colorPath g c n
+	
 
 
 
