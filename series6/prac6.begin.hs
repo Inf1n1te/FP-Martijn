@@ -50,7 +50,7 @@ data ProgramState
 {- | Begingraph
    This is the start state of the graph
 -}
-beginGraph = Graph allNodes allEdges Directed Weighted
+alternativeGraph = Graph allNodes allEdges Directed Weighted
            where
             allNodes = [ ('a', (50, 50), Red)
                        , ('b', (150, 50), Blue)
@@ -60,7 +60,40 @@ beginGraph = Graph allNodes allEdges Directed Weighted
                        , ('c', 'b', Orange, 3, Thin)
                        , ('c', 'a', Purple, 2, Thin)
                        ]
-
+				
+{-
+(x,y)
+bounds - x: 21 - 819
+bounds - y: 21 - 418
+-}				
+beginGraph = Graph allNodes allEdges Directed Weighted
+			where
+				allNodes = 	[ ('a', (21,200), Orange)
+							, ('b', (221,50), Orange)
+							, ('c', (221,350), Orange)
+							, ('d', (421,50), Orange)
+							, ('e', (321,200), Orange)
+							, ('f', (421,350), Orange)
+							, ('g', (621,200), Orange)
+							]
+				allEdges = 	[ ('a', 'b', Orange, 5, Thin)
+							, ('a', 'c', Orange, 3, Thin)
+							, ('a', 'e', Orange, 10, Thin)
+							
+							, ('b', 'd', Orange, 1, Thin)
+							, ('b', 'e', Orange, 7, Thin)
+							
+							, ('c', 'e', Orange, 5, Thin)
+							, ('c', 'f', Orange, 9, Thin)
+							
+							, ('d', 'g', Orange, 6, Thin)
+							, ('d', 'e', Orange, 3, Thin)
+							
+							, ('e', 'g', Orange, 5, Thin)
+							
+							, ('f', 'g', Orange, 2, Thin)
+							, ('f', 'e', Orange, 1, Thin)
+							]
 
 {-| The beginstate of the ProgramState
 -}
