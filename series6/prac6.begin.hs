@@ -71,7 +71,7 @@ beginProgramState = ProgramState [] Nothing Nothing beginGraph
 This is the list of all possible instructions
 Feel free to add your own
 -}
-instructions = [ "Instructions (n, r, e, d, w, f, c, v, x, p, q, y, u, esc)"
+instructions = [ "Instructions (n, r, e, d, w, f, c, v, x, p, q, y, u, i, esc)"
                , "Press 'n' and click on the screen to create a new node"
                , "Press 'r', click on a node and press a letter to rename the node"
                , "Press 'e', click on two nodes to create an edge"
@@ -324,6 +324,17 @@ markAllPaths g ne nb
 			nbs = findNeighboringNodes nb g
 			paths = concat $ map (markAllPaths g' ne) nbs
 
+calculatePathLength :: Graph -> [Edge] -> Float
+calculatePathLength g [] = 0
+calculatePathLength g ((_,_,_,w,_):es) = w + calculatePathLength g es
+
+findShortestPath :: Graph -> [[Edge]] -> [Edge]
+findShortestPath g [p] = p
+findShortestPath g (p1:p2:ps) 	| p1l < p2l	= findShortestPath g (p1:ps)
+				| otherwise	= findShortestPath g (p2:ps)
+	where	p1l = calculatePathLength g p1
+		p2l = calculatePathLength g p2
+
 
 {- | The eventloop
 This function uses the current state and an In event to determine
@@ -480,7 +491,7 @@ eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "y"))
 
 
 {- | If 'u' has been pressed, a node selected and a new key stroke
-comes in, the color of the selected node is changed to red
+comes in, all paths between the two selected nodes are drawn
 -}
 eventloop ps@(ProgramState "u" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
     | nodeAtPosM == Nothing 	= (ps,[])
@@ -490,8 +501,18 @@ eventloop ps@(ProgramState "u" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
 	(Just nodeM) 	= nodeAtPosM 
 	ess = map (nodeSeqToEdgeSeq g) (findAllPaths g node1s nodeM)
 	g' = foldl (\z (x,y) -> colorPath x z y) g (zip allColors ess) 
-	cn c g n = colorPath g c n
 	
+
+{- | If 'i' has been pressed, a node selected and a new key stroke
+comes in, the shortest path between the two selected nodes is drawn
+-}
+eventloop ps@(ProgramState "i" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
+    | nodeAtPosM == Nothing 	= (ps,[])
+    | otherwise 		= (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Mark shortest path:\n"])
+    where
+	nodeAtPosM 	= onNode (nodes g) p
+	(Just nodeM) 	= nodeAtPosM 
+	g' = colorPath Green g (findShortestPath g ( map (nodeSeqToEdgeSeq g) (findAllPaths g node1s nodeM)))
 
 
 
