@@ -483,7 +483,7 @@ comes in, the color of the selected node is changed to red
 -}
 eventloop ps@(ProgramState "u" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
     | nodeAtPosM == Nothing 	= (ps,[])
-    | otherwise 		= (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Mark all " ++ show ess ++ " paths:\n"])
+    | otherwise 		= (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Mark all " ++ show (zip allColors ess) ++ " paths:\n"])
     where
 	nodeAtPosM 	= onNode (nodes g) p
 	(Just nodeM) 	= nodeAtPosM 
