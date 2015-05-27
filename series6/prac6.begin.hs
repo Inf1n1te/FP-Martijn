@@ -50,7 +50,7 @@ data ProgramState
 {- | Begingraph
    This is the start state of the graph
 -}
-beginGraph = Graph allNodes allEdges Directed Unweighted
+beginGraph = Graph allNodes allEdges Directed Weighted
            where
             allNodes = [ ('a', (50, 50), Red)
                        , ('b', (150, 50), Blue)
@@ -71,7 +71,7 @@ beginProgramState = ProgramState [] Nothing Nothing beginGraph
 This is the list of all possible instructions
 Feel free to add your own
 -}
-instructions = [ "Instructions"
+instructions = [ "Instructions (n, r, e, d, w, f, c, v, x, p, q, y, u, esc)"
                , "Press 'n' and click on the screen to create a new node"
                , "Press 'r', click on a node and press a letter to rename the node"
                , "Press 'e', click on two nodes to create an edge"
@@ -82,7 +82,8 @@ instructions = [ "Instructions"
 			   , "Press 'v', click on a node to colour its neighbours blue"
 			   , "Press 'x', to reset all colours in the graph"
 			   , "Press 'p', click on two nodes to show whether there is a path between those nodes."
-			   , "Press 'q' and click to confirm, to see if the graph is strongly connected. all nodes are colored green if this is the case, else they will be colored red."
+			   , "Press 'q', all nodes are coloured green if the graph is strongly connected, otherwise they will be coloured red."
+			   , "Press 'y', all subgraphs will be coloured with a different colour."
                , "Press 'esc' to abort the current operation and start another"  
                ]                             
           
@@ -463,17 +464,17 @@ eventloop ps@(ProgramState "p" (Just node1s) _ g) (InGraphs (Mouse (Click _) p))
 
 {- | If 'q' has been pressed, all nodes and edges are colored green if the graph is strongly connected. Else they is colored red.
 -}
-eventloop ps@(ProgramState "q" _ _ g) (InGraphs (Mouse (Click _) p))
+eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "q"))
     = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Check if strongly connected.\n"])
     where
 	g' 	| isStronglyConnected g = setColor Green g
 		| otherwise		= setColor Red g
 
 
-{- | If 'w' has been pressed, all individual graphs are marked with a color.
+{- | If 'y' has been pressed, all individual graphs are marked with a color.
 -}
 eventloop ps@(ProgramState _ _ _ g) (InGraphs (Key "y"))
-    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Color code subgraphs.\n"])
+    = (ProgramState [] Nothing Nothing g', [OutGraphs $ DrawGraph g', OutStdOut $ S.StdOutMessage $ "Colour code subgraphs.\n"])
     where
 	g' = colorConnectedGraphs allColors g (nodes g)
 
