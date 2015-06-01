@@ -362,6 +362,7 @@ calculatePathLength g [] = 0
 calculatePathLength g ((_,_,_,w,_):es) = w + calculatePathLength g es
 
 findShortestPath :: Graph -> [[Edge]] -> [Edge]
+findShortestPath g [] = []
 findShortestPath g [p] = p
 findShortestPath g (p1:p2:ps) 	| p1l < p2l	= findShortestPath g (p1:ps)
 				| otherwise	= findShortestPath g (p2:ps)
