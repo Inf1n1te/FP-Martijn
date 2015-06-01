@@ -26,8 +26,8 @@ evalOne _ [] (_, Variable _) 		= Right []
 
 evalOne p (c@(e@(s,x), n):cs) y@(q, Constant a) 
 	| e == y && n == []	= Left True
-	| e == y		= all (\(Left x) -> x == True) $ map (evalOne p p) n
-	| s == q 		= all (\(Left x) -> x == True) ( map (evalOne p p) (map (\(x,_) -> (x,a)) n) )
+	| e == y		= Left $ all (== Left True) $ map (evalOne p p) n
+	| s == q 		= Left $ all (== Left True) ( map (evalOne p p) (map (\(x,_) -> (x, Constant a)) n) )
 	| otherwise		= evalOne p cs y 
 
 --evalOne p (c:cs) (q, Variable a) = 
