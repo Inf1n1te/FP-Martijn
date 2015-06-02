@@ -1,5 +1,7 @@
 module Eval2prop where
 
+import Data.List
+
 data Argument 	= Variable String
 				| Constant String
 	deriving (Eq,Show)
@@ -40,8 +42,11 @@ evalOne p ((e@(_, Constant _), n):cs) y@(_, Constant _)
 	| otherwise			= evalOne p cs y
 
 evalOne p (((s, x@(Variable _)), n):cs) y@(q, a@(Constant _))
-	| s == q			= Left $ all (either (== Left True) (/= Right [])) (map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z, w)) n))
+	| s == q && n == []	= Left True
+	| s == q			= Left $ all f $ map (evalOne p p) $ map (\(z, w) -> if w == x then (z, a) else (z, w)) n
 	| otherwise			= evalOne p cs y
+		where
+			f = either (== True) (/= [])
 
 evalOne p ((e@(s, (Constant _)), n):cs) y@(q, (Variable _))
 	| s == q && n == []	= Right $ [e] ++ rest
@@ -50,5 +55,12 @@ evalOne p ((e@(s, (Constant _)), n):cs) y@(q, (Variable _))
 		where
 			Right rest = evalOne p cs y
 
---evalOne p (c@(e@(s, x@(Variable _)), n):cs) y@(q, a@(Variable _))
---	|
+evalOne p (c@(e@(s, x@(Variable w)), n@(ns:nss)):cs) y@(q, a@(Variable z))
+	| s == q && n == []	= Left True
+	| s == q			= Right $ foldl f b bs
+		where
+			nx 			= map (evalOne p p) n
+			(b:bs)		= rec nx
+			rec (r:rs)	= either (if (== True) then rec rs else []) (r:(rec rs)) r
+			f l k 		= intersect (t l) (t k)
+			t			= map (\(i, o) -> (s, o))
