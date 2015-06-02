@@ -17,10 +17,14 @@ defaultProgram = [
 	(("q", Constant "a"), []),
 	(("q", Constant "b"), []),
 
-	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")])
+	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")]),
+
+	(("s", Variable "X"), [("p", Variable "X"), ("q", Constant "a")]),
+
+	(("t", Variable "X"), [("p", Variable "X"), ("q", Variable "Y")])
 	]
 
-test :: Expression -> Either Bool [Expression]	
+test :: Expression -> Either Bool [Expression]
 test x = evalOne defaultProgram defaultProgram x
 
 evalOne :: Program -> Program -> Expression -> Either Bool [Expression]
@@ -30,10 +34,13 @@ evalOne _ [] (_, Constant _) 		= Left False
 evalOne [] _ (_, Variable _) 		= Right []
 evalOne _ [] (_, Variable _) 		= Right []
 
-evalOne p (c@(e@(s,x), n):cs) y@(q, a@(Constant _))
+evalOne p ((e@(_, Constant _), n):cs) y@(_, Constant _)
 	| e == y && n == []	= Left True
 	| e == y			= Left $ all (== Left True) $ map (evalOne p p) n
-	| s == q 			= Left $ all (== Left True) ( map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z,w)) n))
+	| otherwise			= evalOne p cs y
+
+evalOne p (((s, x@(Variable _)), n):cs) y@(q, a@(Constant _))
+	| s == q			= Left $ all (== Left True) ( map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z,w)) n))
 	| otherwise			= evalOne p cs y
 
 --evalOne p (c:cs) (q, Variable a) =
