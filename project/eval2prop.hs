@@ -19,6 +19,10 @@ defaultProgram = [
 
 	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")])
 	]
+
+test :: Expression -> Either Bool [Expression]	
+test x = evalOne defaultProgram defaultProgram x
+
 evalOne :: Program -> Program -> Expression -> Either Bool [Expression]
 
 evalOne [] _ (_, Constant _) 		= Left False
@@ -28,8 +32,8 @@ evalOne _ [] (_, Variable _) 		= Right []
 
 evalOne p (c@(e@(s,x), n):cs) y@(q, a@(Constant _))
 	| e == y && n == []	= Left True
-	| e == y		= Left $ all (== Left True) $ map (evalOne p p) n
-	| s == q 		= Left $ all (== Left True) ( map (evalOne p p) (map (\(z,_) -> (z, a)) n) )
-	| otherwise		= evalOne p cs y
+	| e == y			= Left $ all (== Left True) $ map (evalOne p p) n
+	| s == q 			= Left $ all (== Left True) ( map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z,w)) n))
+	| otherwise			= evalOne p cs y
 
 --evalOne p (c:cs) (q, Variable a) =
