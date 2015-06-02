@@ -11,7 +11,7 @@ type Expression = (String, Argument)
 defaultProgram :: Program
 defaultProgram = [
 	(("p", Constant "a"), []),
-	(("p", Constant "b"), []),
+	(("p", Constant "b"), [("p", Constant "a"), ("p", Constant "c")]),
 	(("p", Constant "c"), []),
 
 	(("q", Constant "a"), []),
@@ -40,7 +40,15 @@ evalOne p ((e@(_, Constant _), n):cs) y@(_, Constant _)
 	| otherwise			= evalOne p cs y
 
 evalOne p (((s, x@(Variable _)), n):cs) y@(q, a@(Constant _))
-	| s == q			= Left $ all (== Left True) ( map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z,w)) n))
+	| s == q			= Left $ all (either (== Left True) (/= Right [])) (map (evalOne p p) (map (\(z,w) -> if w == x then (z, a) else (z, w)) n))
 	| otherwise			= evalOne p cs y
 
---evalOne p (c:cs) (q, Variable a) =
+evalOne p ((e@(s, (Constant _)), n):cs) y@(q, (Variable _))
+	| s == q && n == []	= Right $ [e] ++ rest
+	| s == q 			= if (all (== Left True) ( map (evalOne p p) n)) then (Right $ [e] ++ rest) else (Right $ [] ++ rest)
+	| otherwise			= Right rest
+		where
+			Right rest = evalOne p cs y
+
+--evalOne p (c@(e@(s, x@(Variable _)), n):cs) y@(q, a@(Variable _))
+--	|
