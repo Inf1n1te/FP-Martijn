@@ -20,15 +20,27 @@ defaultProgram = [
 	(("q", Constant "a"), []),
 	(("q", Constant "d"), []),
 
-	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")]),
+	(("k", Constant "d"), []),
 
-	(("s", Variable "X"), [("p", Variable "X"), ("q", Constant "a")]),
+	(("r", Variable "X"), [("p", Variable "X"), ("k", Variable "Y"), ("q", Variable "Y")]),
 
-	(("t", Variable "X"), [("p", Variable "X"), ("q", Variable "Y")])
+	(("s", Variable "X"), [("q", Variable "X"), ("q", Constant "a")]),
+
+	(("t", Variable "X"), [("p", Variable "X"), ("q", Variable "Y")]),
+
+	(("t", Variable "X"), [("s", Variable "X"), ("q", Variable "Y")])
 	]
 
 test :: Expression -> Either Bool [Result]
-test x = evalOne defaultProgram defaultProgram x
+test x = eval defaultProgram x
+
+eval :: Program -> Expression -> Either Bool [Result]
+eval p q@(_, (Variable v))	= either left right result
+	where
+		result 	= evalOne p p q
+		left x	= Left x
+		right x	= Right $ filter (\(y,_) -> y == v) x
+eval p q = evalOne p p q
 
 evalOne :: Program -> Program -> Expression -> Either Bool [Result]
 
@@ -62,10 +74,10 @@ evalOne p (((s, (Constant x)), n):cs) y@(q, (Variable v))
 
 evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 	| s == q && n == []	= Left True
-	| s == q			= Right $ foldl f b bs
+	| s == q			= Right $ foldl f b bs ++ rest
 	| otherwise			= evalOne p cs y
 		where
-			f l k 		= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l k
+			f l k 		= intersect' l k
 			(b:bs)		= rec nx
 			nx 			= map (evalOne p p) n
 			rec []		= []
@@ -74,3 +86,13 @@ evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 					sub1 xy	| xy == True	= rec rs
 							| otherwise 	= [[]]
 					sub2 xy	= xy:(rec rs)
+			Right rest = evalOne p cs y
+
+intersect' :: [Result] -> [Result] -> [Result]
+intersect' [] _ 		= []
+intersect' _ []			= []
+intersect' l r@(rs:_) 	| elem (getX rs) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l r
+						| otherwise 					= union l r
+	where
+		getX (x,_) = x
+		getAllX z = map getX z
