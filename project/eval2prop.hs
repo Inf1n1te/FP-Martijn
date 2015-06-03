@@ -9,6 +9,7 @@ data Argument 	= Variable String
 type Program = [Clause]
 type Clause = (Expression, [Expression])
 type Expression = (String, Argument)
+type Result	= (String, String)
 
 defaultProgram :: Program
 defaultProgram = [
@@ -17,7 +18,7 @@ defaultProgram = [
 	(("p", Constant "c"), []),
 
 	(("q", Constant "a"), []),
-	(("q", Constant "b"), []),
+	(("q", Constant "c"), []),
 
 	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")]),
 
@@ -26,10 +27,10 @@ defaultProgram = [
 	(("t", Variable "X"), [("p", Variable "X"), ("q", Variable "Y")])
 	]
 
-test :: Expression -> Either Bool [Expression]
+test :: Expression -> Either Bool [Result]
 test x = evalOne defaultProgram defaultProgram x
 
-evalOne :: Program -> Program -> Expression -> Either Bool [Expression]
+evalOne :: Program -> Program -> Expression -> Either Bool [Result]
 
 evalOne [] _ (_, Constant _) 		= Left False
 evalOne _ [] (_, Constant _) 		= Left False
@@ -43,24 +44,39 @@ evalOne p ((e@(_, Constant _), n):cs) y@(_, Constant _)
 
 evalOne p (((s, x@(Variable _)), n):cs) y@(q, a@(Constant _))
 	| s == q && n == []	= Left True
-	| s == q			= Left $ all f $ map (evalOne p p) $ map (\(z, w) -> if w == x then (z, a) else (z, w)) n
+	| s == q			= Left $ all f $ map (evalOne p p) $ map f' n
 	| otherwise			= evalOne p cs y
 		where
-			f = either (== True) (/= [])
+			f' (z, w)	| w == x 	= (z, a)
+						| otherwise = (z, w)
+			f 			= either (== True) (/= [])
 
-evalOne p ((e@(s, (Constant _)), n):cs) y@(q, (Variable _))
-	| s == q && n == []	= Right $ [e] ++ rest
-	| s == q 			= if (all (== Left True) ( map (evalOne p p) n)) then (Right $ [e] ++ rest) else (Right $ [] ++ rest)
+evalOne p (((s, (Constant x)), n):cs) y@(q, (Variable v))
+	| s == q && n == []								= Right $ [(v,x)] ++ rest
+	| s == q &&
+		(all (== Left True) ( map (evalOne p p) n))	= Right $ [(v,x)] ++ rest
+	| s == q 										= Right $ [] ++ rest
 	| otherwise			= Right rest
 		where
 			Right rest = evalOne p cs y
 
-evalOne p (c@(e@(s, x@(Variable w)), n@(ns:nss)):cs) y@(q, a@(Variable z))
+evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 	| s == q && n == []	= Left True
 	| s == q			= Right $ foldl f b bs
+	| otherwise			= evalOne p cs y
 		where
-			nx 			= map (evalOne p p) n
+			f l k 		= intersect' (t l) (t k)
+			t			= map (\(_, o) -> (s, o))
 			(b:bs)		= rec nx
-			rec (r:rs)	= either (if (== True) then rec rs else []) (r:(rec rs)) r
-			f l k 		= intersect (t l) (t k)
-			t			= map (\(i, o) -> (s, o))
+			nx 			= map (evalOne p p) n
+			rec []		= []
+			rec (r:rs)	= either (sub1) (sub2) r
+				where
+					sub1 xy	| xy == True	= rec rs
+							| otherwise 	= [[]]
+					sub2 xy	= xy:(rec rs)
+
+intersect' :: [Result] -> [Result] -> String -> [Result]
+intersect' [] _ _						= []
+intersect' _ [] _						= []
+intersect' l@((w,x):ls) r@((y,z):rs) v	| w == v && y == v = intersectBy (\(_,q) (_,r) -> q == r) l r
