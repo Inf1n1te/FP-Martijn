@@ -79,4 +79,7 @@ evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 intersect' :: [Result] -> [Result] -> String -> [Result]
 intersect' [] _ _						= []
 intersect' _ [] _						= []
-intersect' l@((w,x):ls) r@((y,z):rs) v	| w == v && y == v = intersectBy (\(_,q) (_,r) -> q == r) l r
+intersect' l@((w,x):ls) r@((y,z):rs) v	| w == v && y == v 	= intersectBy (\(_,q) (_,r) -> q == r) l r
+										| w == v 			= l
+										| y == v			= r
+										| otherwise			= 
