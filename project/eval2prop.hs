@@ -18,7 +18,7 @@ defaultProgram = [
 	(("p", Constant "c"), []),
 
 	(("q", Constant "a"), []),
-	(("q", Constant "c"), []),
+	(("q", Constant "d"), []),
 
 	(("r", Variable "X"), [("p", Variable "X"), ("q", Variable "X")]),
 
@@ -65,8 +65,7 @@ evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 	| s == q			= Right $ foldl f b bs
 	| otherwise			= evalOne p cs y
 		where
-			f l k 		= intersect' (t l) (t k)
-			t			= map (\(_, o) -> (s, o))
+			f l k 		= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l k
 			(b:bs)		= rec nx
 			nx 			= map (evalOne p p) n
 			rec []		= []
@@ -75,11 +74,3 @@ evalOne p (((s, (Variable _)), n):cs) y@(q, (Variable _))
 					sub1 xy	| xy == True	= rec rs
 							| otherwise 	= [[]]
 					sub2 xy	= xy:(rec rs)
-
-intersect' :: [Result] -> [Result] -> String -> [Result]
-intersect' [] _ _						= []
-intersect' _ [] _						= []
-intersect' l@((w,x):ls) r@((y,z):rs) v	| w == v && y == v 	= intersectBy (\(_,q) (_,r) -> q == r) l r
-										| w == v 			= l
-										| y == v			= r
-										| otherwise			= 
