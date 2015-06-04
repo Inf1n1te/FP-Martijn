@@ -67,8 +67,22 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 							substitute _ = Left True
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
-	|
-		=
+	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [("remove_after","remove_after")])
+		= []
+	| e_str == q_str && length e_args == length q_args
+		= ((check e_args q_args [("remove_after","remove_after")]) \\ [("remove_after","remove_after")])
+			where
+				check [] [] _	= []
+				check ((_, Constant x):e_args_tail) ((_, Constant y):q_args_tail) _
+					| x == y 	= check e_args_tail q_args_tail
+					| otherwise	= []
+				check ((_, Constant x):e_args_tail) ((_, Variable y):q_args_tail) extras
+					= union [Right (y, x)] extras
+				substitute (\\TODO_ q_a) (Variable e_a) exs	= map (map (replace) exs)
+					where
+						replace x 	| x == e_a	= q_a
+									| otherwise = x
+
 	| otherwise
 		= evalMulti p cs q
 
