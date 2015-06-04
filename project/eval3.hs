@@ -32,4 +32,26 @@ defaultProgram = [
 	]
 
 test :: Expression -> Either Bool [Result]
-test x = eval defaultProgram x
+test x = evalMulti defaultProgram defaultProgram x
+
+evalMulti :: Program -> Program -> Expression -> Either Bool [Result]
+evalMulti p (c@(e@(e_str, e_agrs@(e_arg:e_arg_tail)), exprs):cs) q@(q_str, q_args@(q_arg:q_arg_tail))
+	= Right []
+
+intersect'' :: [Result] -> [Result] -> [Result]
+intersect'' l r = foldl intersect' l (s s')
+	where
+		s'              = sort r
+		s []			= []
+		s l@((x,y):_)	= [b] ++ s (l \\ b)
+			where
+				b 		= takeWhile (\(i,_) -> i == x) l
+
+intersect' :: [Result] -> [Result] -> [Result]
+intersect' [] _ 		= []
+intersect' _ []			= []
+intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l s
+						| otherwise 					= union l s
+	where
+		getX (x,_)      = x
+		getAllX z       = map getX z
