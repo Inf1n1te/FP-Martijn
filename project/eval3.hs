@@ -35,13 +35,27 @@ test :: Expression -> Either Bool [Result]
 test x = evalMulti defaultProgram defaultProgram x
 
 evalMulti :: Program -> Program -> Expression -> Either Bool [Result]
-evalMulti p (c@(e@(e_str, e_agrs@(e_arg:e_arg_tail)), exprs):cs) q@(q_str, q_args@(q_arg:q_arg_tail))
-	|
+evalMulti [] _ _ 	= error "empty program"
+evalMulti _ [] _ 	= Right []
+evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
+	| e_str == q_str && null es && length e_args == length q_args && (all (== True) $ map no_es_check $ zip e_args q_args)
+		= Left True
+	| e_str == q_str && null es && length e_args == length q_args
+		= evalMulti p cs q
+	| e_str == q_str && null es
+		= Left False
+	| e_str == q_str
+		= Right []
+	| otherwise
+		= evalMulti p cs q
+		where
+			no_es_check	(Constant x, Constant y)	= x == y
+			no_es_check	_							= True
 
 intersect'' :: [Result] -> [Result] -> [Result]
 intersect'' l r = foldl intersect' l (s s')
 	where
-		s'			  = sort r
+		s'			  	= sort r
 		s []			= []
 		s l@((x,y):_)	= [b] ++ s (l \\ b)
 			where
@@ -54,4 +68,4 @@ intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) ->
 						| otherwise 					= union l s
 	where
 		getX (x,_)	  = x
-		getAllX z	   = map getX z
+		getAllX z	  = map getX z
