@@ -108,7 +108,22 @@ evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@
 		= evalMulti p cs q
 			where
 				result 					= foldl intersect''' b bs
-				(b:bs) 					= map (eval p) $ substitute q_args e_args es
+				(b:bs) 					= map (eval p) $ substitute rq_args re_args res
+					where
+						(rq_args, re_args, res) = refactor q_args e_args es
+						refactor :: [Argument] -> [Argument] -> [Expression] -> ([Argument], [Argument], [Expression])
+						refactor qa ea es'
+							| any (==True) (map (\(rqarg) -> elem rqarg ea || any (\(_,list) -> elem rqarg list ) es') qa )
+								= (qa, (subConflictea), (subConflictes'))
+							| otherwise 
+								= (qa, ea, es')
+								where 
+									subConflictea = snd $ head $ substitute qa (map argSub qa) [("bla",ea)]
+									argSub (Variable qai) = (Variable (qai++"arg"))
+									argSub (Constant qai) = (Constant (qai++"arg"))
+									subConflictes' = substitute qa (map argSub qa) es'
+									a = print $ (map (\(rqarg) -> elem rqarg ea || any (\(_,list) -> elem rqarg list ) es') qa)
+
 				substitute :: [Argument] -> [Argument] -> [Expression] -> [Expression]
 				substitute [] [] exs	=  exs
 				substitute (q1:q_rest) (e1:e_rest) exs
@@ -131,6 +146,7 @@ evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@
 					where
 						replace x 	| x == ee	= qq
 									| otherwise = x
+				substitution qq ee exs 									= exs
 
 
 intersect''' :: [Result] -> [Result] -> [Result]
