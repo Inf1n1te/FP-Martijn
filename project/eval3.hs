@@ -1,6 +1,7 @@
 module Eval3 where
 
 import Data.List
+import Data.Either
 
 data Argument 	= Variable String
 				| Constant String
@@ -9,10 +10,10 @@ data Argument 	= Variable String
 type Program = [Clause]
 type Clause = (Expression, [Expression])
 type Expression = (String, [Argument])
-type Result	= (String, String)
+type Result	= Either Bool (String, String)
 
-defaultProgram :: Program
-defaultProgram = [
+oldDefaultProgram :: Program
+oldDefaultProgram = [
 	(("p", [Constant "a"]), []),
 	(("p", [Constant "b"]), [("p", [Constant "a"]), ("p", [Constant "c"])]),
 	(("p", [Constant "c"]), []),
@@ -31,28 +32,57 @@ defaultProgram = [
 	(("t", [Variable "X"]), [("s", [Variable "X"]), ("q", [Variable "Y"])])
 	]
 
-test :: Expression -> Either Bool [Result]
+defaultProgram :: Program
+defaultProgram = [
+	(("p", []), []),
+	(("p", [Constant "a", Variable "X"]), []),
+	(("p", [Variable "X", Constant "b"]), []),
+	(("p", [Variable "X", Variable "Y"]), [])
+	]
+
+test :: Expression -> [Result]
 test x = evalMulti defaultProgram defaultProgram x
 
-evalMulti :: Program -> Program -> Expression -> Either Bool [Result]
+evalMulti :: Program -> Program -> Expression -> [Result]
+
 evalMulti [] _ _ 	= error "empty program"
-evalMulti _ [] _ 	= Right []
-evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
-	| e_str == q_str && null es && length e_args == length q_args && (all (== True) $ map no_es_check $ zip e_args q_args)
-		= Left True
-	| e_str == q_str && null es && length e_args == length q_args
-		= evalMulti p cs q
-	| e_str == q_str && null es
-		= Left False
-	| e_str == q_str
-		= Right []
+
+evalMulti _ [] _ 	= []
+
+evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
+	| e_str == q_str && length e_args == length q_args
+		= process ++ (evalMulti p cs q)
 	| otherwise
 		= evalMulti p cs q
 		where
-			no_es_check	(Constant x, Constant y)	= x == y
-			no_es_check	_							= True
+			process :: [Result]
+			process		| elem (Left False) x	= []
+						| all (== Left True) x 	= [Left True]
+						| otherwise 			= map (\y -> Right y) (rights x)
+				where
+					x 	= map substitute $ zip e_args q_args
+						where
+							substitute (Constant z, Constant y)	= Left $ z == y
+							substitute (Constant z, Variable y) = Right (y, z)
+							substitute _ = Left True
 
-intersect'' :: [Result] -> [Result] -> [Result]
+evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
+	|
+		=
+	| otherwise
+		= evalMulti p cs q
+
+intersect''' :: [Result] -> [Result] -> [Result]
+intersect''' l r
+	| elem (Left False) (l ++ r)	= []
+	| otherwise						= map (\x -> Right x) (intersect'' lr rr) ++ ll ++ rl
+		where
+			lr = rights l
+			ll = map (\x -> Left x) $ lefts l
+			rr = rights r
+			rl = map (\x -> Left x) $ lefts r
+
+intersect'' :: [(String, String)] -> [(String, String)] -> [(String, String)]
 intersect'' l r = foldl intersect' l (s s')
 	where
 		s'			  	= sort r
@@ -61,7 +91,7 @@ intersect'' l r = foldl intersect' l (s s')
 			where
 				b 		= takeWhile (\(i,_) -> i == x) l
 
-intersect' :: [Result] -> [Result] -> [Result]
+intersect' :: [(String, String)] -> [(String, String)] -> [(String, String)]
 intersect' [] _ 		= []
 intersect' _ []			= []
 intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l s
