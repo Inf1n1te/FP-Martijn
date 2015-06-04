@@ -32,16 +32,47 @@ oldDefaultProgram = [
 	(("t", [Variable "X"]), [("s", [Variable "X"]), ("q", [Variable "Y"])])
 	]
 
-defaultProgram :: Program
-defaultProgram = [
+oldDefaultProgram2 :: Program
+oldDefaultProgram2 = [
 	(("p", []), []),
 	(("p", [Constant "a", Variable "X"]), []),
 	(("p", [Variable "X", Constant "b"]), []),
 	(("p", [Variable "X", Variable "Y"]), [])
 	]
 
+defaultProgram :: Program
+defaultProgram = [
+	(("w", [Constant "j"]),[]),
+	(("w", [Constant "b"]),[]),
+	(("w", [Constant "m"]),[]),
+	(("w", [Constant "i"]),[]),
+	(("w", [Constant "c"]),[]),
+	(("m", [Constant "b"]),[]),
+	(("mother", [Constant "j", Constant "b" ]),[]),
+	(("mother", [Constant "j", Constant "m" ]),[]),
+	(("mother", [Constant "j", Constant "i" ]),[]),
+	(("father", [Constant "b", Constant "b" ]),[]),
+	(("father", [Constant "b", Constant "m" ]),[]),
+	(("child", [Variable "K", Variable "O"]), [("mother", [Variable "O", Variable "K"])]),
+	(("child", [Variable "K", Variable "O"]), [("father", [Variable "O", Variable "K"])]),
+	(("son", [Variable "Z", Variable "O"]) ,[("child", [Variable "Z", Variable "O"]), ("man", [Variable "Z"])]),
+	(("sister", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("woman", [Variable "X"]), ("child", [Variable "Y", Variable "O"])])
+	]
+
 test :: Expression -> [Result]
 test x = evalMulti defaultProgram defaultProgram x
+
+eval :: Program -> Expression -> [Result]
+eval p q@(_, q_args) 	| null (evalMulti p p q)					= [Left False]
+						| all (== (Left True)) (evalMulti p p q)	= [Left True]
+						| otherwise 								= filter f (evalMulti p p q)
+	where
+		f 							= either left right
+		left _						= True
+		right (x,_)					= elem x $ getArgs q_args
+		getArgs []					= []
+		getArgs ((Variable x):xs)	= x:(getArgs xs)
+		getArgs ((Constant x):xs)	= getArgs xs
 
 evalMulti :: Program -> Program -> Expression -> [Result]
 
@@ -67,24 +98,38 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 							substitute _ = Left True
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
-	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [("remove_after","remove_after")])
+	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right ("remove_after","remove_after")])
 		= []
 	| e_str == q_str && length e_args == length q_args
-		= ((check e_args q_args [("remove_after","remove_after")]) \\ [("remove_after","remove_after")])
-			where
-				check [] [] _	= []
-				check ((_, Constant x):e_args_tail) ((_, Constant y):q_args_tail) _
-					| x == y 	= check e_args_tail q_args_tail
-					| otherwise	= []
-				check ((_, Constant x):e_args_tail) ((_, Variable y):q_args_tail) extras
-					= union [Right (y, x)] extras
-				substitute (\\TODO_ q_a) (Variable e_a) exs	= map (map (replace) exs)
-					where
-						replace x 	| x == e_a	= q_a
-									| otherwise = x
-
+		= intersect''' ((check e_args q_args [Right ("remove_after","remove_after")]) \\ [Right ("remove_after","remove_after")]) result
 	| otherwise
 		= evalMulti p cs q
+			where
+				result 					= foldl intersect''' b bs
+				(b:bs) 					= map (eval p) $ substitute q_args e_args es
+				substitute :: [Argument] -> [Argument] -> [Expression] -> [Expression]
+				substitute [] [] exs	=  exs
+				substitute (q1:q_rest) (e1:e_rest) exs
+					= substitute q_rest e_rest $ substitution q1 e1 exs
+				check :: [Argument] -> [Argument] -> [Result] -> [Result]
+				check [] [] _			= []
+				check ((Constant x):e_args_tail) ((Constant y):q_args_tail) extras
+					| x == y 			= check e_args_tail q_args_tail extras
+					| otherwise			= []
+				check ((Constant x):e_args_tail) ((Variable y):q_args_tail) extras
+					= union [Right (y, x)] extras
+				check (_:e_args_tail) (_:q_args_tail) extras
+					= check e_args_tail q_args_tail extras
+				substitution :: Argument -> Argument -> [Expression] -> [Expression]
+				substitution qq@(Variable q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
+					where
+						replace x 	| x == ee	= qq
+									| otherwise = x
+				substitution qq@(Constant q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
+					where
+						replace x 	| x == ee	= qq
+									| otherwise = x
+
 
 intersect''' :: [Result] -> [Result] -> [Result]
 intersect''' l r
