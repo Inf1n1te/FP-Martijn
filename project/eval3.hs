@@ -99,7 +99,7 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
 	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right ("remove_after","remove_after")])
-		= []
+		= result
 	| e_str == q_str && length e_args == length q_args
 		= intersect''' ((check e_args q_args [Right ("remove_after","remove_after")]) \\ [Right ("remove_after","remove_after")]) result
 	| otherwise
