@@ -50,7 +50,7 @@ defaultProgram = [
 	(("m", [Constant "be"]),[]),
 	(("m", [Constant "w"]),[]),
 	(("mother", [Constant "j", Constant "b" ]),[]),
-	(("mother", [Constant "j", Constant "w" ]),[]),
+	(("mother", [Constant "b", Constant "w" ]),[]),
 	(("mother", [Constant "j", Constant "m" ]),[]),
 	(("mother", [Constant "j", Constant "i" ]),[]),
 	(("father", [Constant "be", Constant "b" ]),[]),
@@ -62,7 +62,7 @@ defaultProgram = [
 	]
 
 test :: Expression -> [Result]
-test x = evalMulti defaultProgram defaultProgram x
+test x = eval defaultProgram x
 
 eval :: Program -> Expression -> [Result]
 eval p q@(_, q_args) 	| null (evalMulti p p q)					= [Left False]
@@ -101,9 +101,9 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
 	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right ("remove_after","remove_after")])
-		= result
+		= result ++ (evalMulti p cs q)
 	| e_str == q_str && length e_args == length q_args
-		= intersect''' ((check e_args q_args [Right ("remove_after","remove_after")]) \\ [Right ("remove_after","remove_after")]) result
+		= intersect''' ((check e_args q_args [Right ("remove_after","remove_after")]) \\ [Right ("remove_after","remove_after")]) result ++ (evalMulti p cs q)
 	| otherwise
 		= evalMulti p cs q
 			where
