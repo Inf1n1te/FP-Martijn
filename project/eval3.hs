@@ -47,16 +47,18 @@ defaultProgram = [
 	(("w", [Constant "m"]),[]),
 	(("w", [Constant "i"]),[]),
 	(("w", [Constant "c"]),[]),
-	(("m", [Constant "b"]),[]),
+	(("m", [Constant "be"]),[]),
+	(("m", [Constant "w"]),[]),
 	(("mother", [Constant "j", Constant "b" ]),[]),
+	(("mother", [Constant "j", Constant "w" ]),[]),
 	(("mother", [Constant "j", Constant "m" ]),[]),
 	(("mother", [Constant "j", Constant "i" ]),[]),
-	(("father", [Constant "b", Constant "b" ]),[]),
-	(("father", [Constant "b", Constant "m" ]),[]),
+	(("father", [Constant "be", Constant "b" ]),[]),
+	(("father", [Constant "be", Constant "m" ]),[]),
 	(("child", [Variable "K", Variable "O"]), [("mother", [Variable "O", Variable "K"])]),
 	(("child", [Variable "K", Variable "O"]), [("father", [Variable "O", Variable "K"])]),
-	(("son", [Variable "Z", Variable "O"]) ,[("child", [Variable "Z", Variable "O"]), ("man", [Variable "Z"])]),
-	(("sister", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("woman", [Variable "X"]), ("child", [Variable "Y", Variable "O"])])
+	(("son", [Variable "Z", Variable "O"]) ,[("child", [Variable "Z", Variable "O"]), ("m", [Variable "Z"])]),
+	(("sister", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("w", [Variable "X"]), ("child", [Variable "Y", Variable "O"])])
 	]
 
 test :: Expression -> [Result]
