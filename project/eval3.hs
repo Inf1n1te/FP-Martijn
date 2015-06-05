@@ -74,7 +74,7 @@ eval p q@(_, q_args) 	| null (evalMulti p p q)					= [Left False]
 	where
 		f 							= either left right
 		left x						= x
-		right (x,_)					= elem x $ getArgs q_args
+		right x						= elem (fst $ head x) $ getArgs q_args
 		getArgs []					= []
 		getArgs ((Variable x):xs)	= x:(getArgs xs)
 		getArgs ((Constant x):xs)	= getArgs xs
@@ -94,12 +94,12 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 			process :: [Result]
 			process		| elem (Left False) x	= []
 						| all (== Left True) x 	= [Left True]
-						| otherwise 			= map (\y -> Right y) (rights x)
+						| otherwise 			= map (\y -> Right [y]) (concat $ rights x)
 				where
 					x 	= map simpleSubstitute $ zip e_args q_args
 						where
 							simpleSubstitute (Constant z, Constant y)	= Left $ z == y
-							simpleSubstitute (Constant z, Variable y) = Right (y, z)
+							simpleSubstitute (Constant z, Variable y) = Right [(y, z)]
 							simpleSubstitute _ = Left True
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
@@ -139,12 +139,14 @@ intersect''' l r
 intersect' :: [[(String, String)]] -> [[(String, String)]] -> [[(String, String)]]
 intersect' [] _ 		= []
 intersect' _ []			= []
-intersect' lss@(l:ls) rss@(r:rs) = -- \\TODO check and intersect
--- intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l s
--- 						| otherwise 					= union l s
--- 	where
--- 		getX (x,_)	  = x
--- 		getAllX z	  = map getX z
+intersect' lss@(l:ls) rss@(r:rs) --      g= fst head a h = snd head a
+	| elem (getX r) (getAllX lss)	= intersectBy (\a b -> ((fst $ head a) == (fst $ head b) && (snd $ head a) == (snd $ head b)) || (fst $ head a) /= (fst $ head b)) lss rss
+	| otherwise 					= union lss rss
+	 	where
+	 		getX x			= fst $ head x
+	 		getAllX z	  	= map getX z
+
+-- \\TODO check and intersect
 
 makeSingle :: [[(String,String)]] -> [[(String,String)]]
 makeSingle []			= []
