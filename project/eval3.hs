@@ -120,7 +120,7 @@ evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@
 intersect''' :: [Result] -> [Result] -> [Result]
 intersect''' l r
 	| elem (Left False) (l ++ r)	= []
-	| otherwise						= map (\x -> Right x) (intersect'' lr rr) ++ ll ++ rl
+	| otherwise						= map (\x -> Right x) (intersect'' lr rr) -- ++ ll ++ rl
 		where
 			lr = rights l
 			ll = map (\x -> Left x) $ lefts l
@@ -144,16 +144,16 @@ intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) ->
 	where
 		getX (x,_)	  = x
 		getAllX z	  = map getX z
-						
+
 refactor :: [Argument] -> [Argument] -> [Expression] -> ([Argument], [Argument], [Expression])
 refactor qa ea es'
 	= (qa, (subConflictea), (subConflictes'))
-		where 
+		where
 			subConflictea = snd $ head $ substitute (map argSub qa) qa [("bla",ea)]
 			argSub (Variable qai) = (Variable (qai++"arg"))
 			argSub (Constant qai) = (Constant (qai++"arg"))
 			subConflictes' = substitute (map argSub qa) qa es'
-				
+
 substitute :: [Argument] -> [Argument] -> [Expression] -> [Expression]
 substitute [] [] exs	=  exs
 substitute (q1:q_rest) (e1:e_rest) exs
