@@ -10,7 +10,7 @@ data Argument 	= Variable String
 type Program = [Clause]
 type Clause = (Expression, [Expression])
 type Expression = (String, [Argument])
-type Result	= Either Bool (String, String)
+type Result	= Either Bool [(String, String)]
 
 oldDefaultProgram :: Program
 oldDefaultProgram = [
