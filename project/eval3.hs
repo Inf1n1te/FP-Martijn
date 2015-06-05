@@ -10,7 +10,7 @@ data Argument 	= Variable String
 type Program = [Clause]
 type Clause = (Expression, [Expression])
 type Expression = (String, [Argument])
-type Result	= Either Bool (String, String)
+type Result	= Either Bool [(String, String)]
 
 oldDefaultProgram :: Program
 oldDefaultProgram = [
@@ -120,30 +120,36 @@ evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@
 intersect''' :: [Result] -> [Result] -> [Result]
 intersect''' l r
 	| elem (Left False) (l ++ r)	= []
-	| otherwise						= map (\x -> Right x) (intersect'' lr rr) -- ++ ll ++ rl
+	| otherwise						= map (\x -> Right x) (intersect' lr rr) -- ++ ll ++ rl
 		where
-			lr = rights l
+			lr = makeSingle $ rights l
 			ll = map (\x -> Left x) $ lefts l
 			rr = rights r
 			rl = map (\x -> Left x) $ lefts r
 
-intersect'' :: [(String, String)] -> [(String, String)] -> [(String, String)]
-intersect'' l r = foldl intersect' l (s s')
-	where
-		s'			  	= sort r
-		s []			= []
-		s l@((x,y):_)	= [b] ++ s (l \\ b)
-			where
-				b 		= takeWhile (\(i,_) -> i == x) l
+-- intersect'' :: [[(String, String)]] -> [[(String, String)]] -> [[(String, String)]]
+-- intersect'' l r = foldl intersect' l (s s')
+-- 	where
+-- 		s'			  	= sort r
+-- 		s []			= []
+-- 		s l@((x,y):_)	= [b] ++ s (l \\ b)
+-- 			where
+-- 				b 		= takeWhile (\(i,_) -> i == x) l
 
-intersect' :: [(String, String)] -> [(String, String)] -> [(String, String)]
+intersect' :: [[(String, String)]] -> [[(String, String)]] -> [[(String, String)]]
 intersect' [] _ 		= []
 intersect' _ []			= []
-intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l s
-						| otherwise 					= union l s
-	where
-		getX (x,_)	  = x
-		getAllX z	  = map getX z
+intersect' lss@(l:ls) rss@(r:rs) = -- \\TODO check and intersect
+-- intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) -> (g == i && h == j) || g /= i) l s
+-- 						| otherwise 					= union l s
+-- 	where
+-- 		getX (x,_)	  = x
+-- 		getAllX z	  = map getX z
+
+makeSingle :: [[(String,String)]] -> [[(String,String)]]
+makeSingle []			= []
+makeSingle ([x]:xs)		= [[x]] ++ (makeSingle xs)
+makeSingle ((x:y):xs)	= [[x]] ++ (makeSingle ([y]++xs))
 
 refactor :: [Argument] -> [Argument] -> [Expression] -> ([Argument], [Argument], [Expression])
 refactor qa ea es'
