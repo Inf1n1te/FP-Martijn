@@ -58,7 +58,10 @@ defaultProgram = [
 	(("child", [Variable "K", Variable "O"]), [("mother", [Variable "O", Variable "K"])]),
 	(("child", [Variable "K", Variable "O"]), [("father", [Variable "O", Variable "K"])]),
 	(("son", [Variable "Z", Variable "O"]) ,[("child", [Variable "Z", Variable "O"]), ("m", [Variable "Z"])]),
-	(("sister", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("w", [Variable "X"]), ("child", [Variable "Y", Variable "O"])])
+	(("daughter", [Variable "Z", Variable "O"]) ,[("child", [Variable "Z", Variable "O"]), ("w", [Variable "Z"])]),
+	(("sister", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("w", [Variable "X"]), ("child", [Variable "Y", Variable "O"])]),
+	(("motherfather", [Variable "X", Variable "Y", Variable "Z"]), [("child", [Variable "Y", Variable "X"]), ("child", [Variable "Y", Variable "Z"])]),
+	(("brother", [Variable "X", Variable "Y"]), [("child", [Variable "X", Variable "O"]), ("m", [Variable "X"]), ("child", [Variable "Y", Variable "O"])])
 	]
 
 test :: Expression -> [Result]
@@ -70,7 +73,7 @@ eval p q@(_, q_args) 	| null (evalMulti p p q)					= [Left False]
 						| otherwise 								= filter f (evalMulti p p q)
 	where
 		f 							= either left right
-		left _						= True
+		left x						= x
 		right (x,_)					= elem x $ getArgs q_args
 		getArgs []					= []
 		getArgs ((Variable x):xs)	= x:(getArgs xs)
@@ -93,11 +96,11 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 						| all (== Left True) x 	= [Left True]
 						| otherwise 			= map (\y -> Right y) (rights x)
 				where
-					x 	= map substitute $ zip e_args q_args
+					x 	= map simpleSubstitute $ zip e_args q_args
 						where
-							substitute (Constant z, Constant y)	= Left $ z == y
-							substitute (Constant z, Variable y) = Right (y, z)
-							substitute _ = Left True
+							simpleSubstitute (Constant z, Constant y)	= Left $ z == y
+							simpleSubstitute (Constant z, Variable y) = Right (y, z)
+							simpleSubstitute _ = Left True
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
 	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right ("remove_after","remove_after")])
@@ -111,42 +114,7 @@ evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@
 				(b:bs) 					= map (eval p) $ substitute rq_args re_args res
 					where
 						(rq_args, re_args, res) = refactor q_args e_args es
-						refactor :: [Argument] -> [Argument] -> [Expression] -> ([Argument], [Argument], [Expression])
-						refactor qa ea es'
-							| any (==True) (map (\(rqarg) -> elem rqarg ea || any (\(_,list) -> elem rqarg list ) es') qa )
-								= (qa, (subConflictea), (subConflictes'))
-							| otherwise 
-								= (qa, ea, es')
-								where 
-									subConflictea = snd $ head $ substitute qa (map argSub qa) [("bla",ea)]
-									argSub (Variable qai) = (Variable (qai++"arg"))
-									argSub (Constant qai) = (Constant (qai++"arg"))
-									subConflictes' = substitute qa (map argSub qa) es'
-									a = print $ (map (\(rqarg) -> elem rqarg ea || any (\(_,list) -> elem rqarg list ) es') qa)
 
-				substitute :: [Argument] -> [Argument] -> [Expression] -> [Expression]
-				substitute [] [] exs	=  exs
-				substitute (q1:q_rest) (e1:e_rest) exs
-					= substitute q_rest e_rest $ substitution q1 e1 exs
-				check :: [Argument] -> [Argument] -> [Result] -> [Result]
-				check [] [] _			= []
-				check ((Constant x):e_args_tail) ((Constant y):q_args_tail) extras
-					| x == y 			= check e_args_tail q_args_tail extras
-					| otherwise			= []
-				check ((Constant x):e_args_tail) ((Variable y):q_args_tail) extras
-					= union [Right (y, x)] extras
-				check (_:e_args_tail) (_:q_args_tail) extras
-					= check e_args_tail q_args_tail extras
-				substitution :: Argument -> Argument -> [Expression] -> [Expression]
-				substitution qq@(Variable q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
-					where
-						replace x 	| x == ee	= qq
-									| otherwise = x
-				substitution qq@(Constant q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
-					where
-						replace x 	| x == ee	= qq
-									| otherwise = x
-				substitution qq ee exs 									= exs
 
 
 intersect''' :: [Result] -> [Result] -> [Result]
@@ -176,3 +144,36 @@ intersect' l s@(r:_) 	| elem (getX r) (getAllX l)	= intersectBy (\(g,h) (i,j) ->
 	where
 		getX (x,_)	  = x
 		getAllX z	  = map getX z
+						
+refactor :: [Argument] -> [Argument] -> [Expression] -> ([Argument], [Argument], [Expression])
+refactor qa ea es'
+	= (qa, (subConflictea), (subConflictes'))
+		where 
+			subConflictea = snd $ head $ substitute (map argSub qa) qa [("bla",ea)]
+			argSub (Variable qai) = (Variable (qai++"arg"))
+			argSub (Constant qai) = (Constant (qai++"arg"))
+			subConflictes' = substitute (map argSub qa) qa es'
+				
+substitute :: [Argument] -> [Argument] -> [Expression] -> [Expression]
+substitute [] [] exs	=  exs
+substitute (q1:q_rest) (e1:e_rest) exs
+	= substitute q_rest e_rest $ substitution q1 e1 exs
+check :: [Argument] -> [Argument] -> [Result] -> [Result]
+check [] [] _			= []
+check ((Constant x):e_args_tail) ((Constant y):q_args_tail) extras
+	| x == y 			= check e_args_tail q_args_tail extras
+	| otherwise			= []
+check ((Constant x):e_args_tail) ((Variable y):q_args_tail) extras
+	= union [Right (y, x)] extras
+check (_:e_args_tail) (_:q_args_tail) extras
+	= check e_args_tail q_args_tail extras
+substitution :: Argument -> Argument -> [Expression] -> [Expression]
+substitution qq@(Variable q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
+	where
+		replace x 	| x == ee	= qq
+					| otherwise = x
+substitution qq@(Constant q_a) ee@(Variable e_a) exs	= map (\(z,y) -> (z, map (replace) y)) exs
+	where
+		replace x 	| x == ee	= qq
+					| otherwise = x
+substitution qq ee exs 									= exs
