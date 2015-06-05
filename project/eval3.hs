@@ -103,10 +103,10 @@ evalMulti p (c@(e@(e_str, e_args), []):cs) q@(q_str, q_args)
 							simpleSubstitute _ = Left True
 
 evalMulti p (c@(e@(e_str, e_args@(e_arg:e_args_tail)), es):cs) q@(q_str, q_args@(q_arg:q_args_tail))
-	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right ("remove_after","remove_after")])
+	| e_str == q_str && length e_args == length q_args && (null $ check e_args q_args [Right [("remove_after","remove_after")]])
 		= result ++ (evalMulti p cs q)
 	| e_str == q_str && length e_args == length q_args
-		= intersect''' ((check e_args q_args [Right ("remove_after","remove_after")]) \\ [Right ("remove_after","remove_after")]) result ++ (evalMulti p cs q)
+		= intersect''' ((check e_args q_args [Right [("remove_after","remove_after")]]) \\ [Right [("remove_after","remove_after")]]) result ++ (evalMulti p cs q)
 	| otherwise
 		= evalMulti p cs q
 			where
@@ -164,7 +164,7 @@ check ((Constant x):e_args_tail) ((Constant y):q_args_tail) extras
 	| x == y 			= check e_args_tail q_args_tail extras
 	| otherwise			= []
 check ((Constant x):e_args_tail) ((Variable y):q_args_tail) extras
-	= union [Right (y, x)] extras
+	= union [Right [(y, x)]] extras
 check (_:e_args_tail) (_:q_args_tail) extras
 	= check e_args_tail q_args_tail extras
 substitution :: Argument -> Argument -> [Expression] -> [Expression]
