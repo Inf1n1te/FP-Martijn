@@ -109,14 +109,14 @@ primesTo x 	= sieve [2..x]
 dividers :: Int -> [Int] 
 dividers n	= [ x | x <- [2..n], mod n x == 0 ]
 
-altPrimes n 	= (length (dividers n)) == 2
+altPrimes n 	= (length (dividers n)) == 1
 
 ----------------------------------
 --	   Excercise 4		--
 ----------------------------------
 --a
 pyth :: (Integral t) => t -> [(t, t, t)]
-pyth n = [(x,y,z) |x <- [1..n], y <- [1..n], z <- [1..n], x^2 + y^2 == z^2]
+pyth n = [(x,y,z) | x <- [1..n], y <- [1..n], z <- [1..n], x^2 + y^2 == z^2]
 
 --b
 --pythUniq :: Int -> [(Int, Int, Int)]
@@ -137,20 +137,71 @@ weaklyIncreasing xs 	= increasing (zipWith (/) (scanl (+) 0 xs) [1..])
 
 ---ex6
 --a
-sublist (x:xs) (y:ys)	| x == y	= allEqual (zipWith (==) xs ys)
-			| otherwise	= sublist (x:xs) ys
+
+
+sublist (x:xs) yss@(y:ys)	| x == y		= allEqual (zipWith (==) xs ys)
+				| otherwise		= sublist (x:xs) ys
+--TODO fails on [1,4,5,1,2,3] with input [1,2,3]
 
 --b
-psublist (x:xs) []	= False
 psublist [] _		= True
-psublist (x:xs) (y:ys)	| x == y	= sublist xs ys
-			| otherwise	= sublist (x:xs) ys
+psublist _ []		= False
+psublist (x:xs) (y:ys)	| x == y	= psublist xs ys
+			| otherwise	= psublist (x:xs) ys
+
 
 ---ex7
 --a
 --bsort xs	= 
 --ins :: Ord a => a -> [a] -> [a]
 
-ins y []	= [y]
-ins y (x:xs)	| y <= x	= y:x:xs
-		| otherwise	= x:(ins y xs)
+bsort :: Ord a => [a] -> [a]
+bsort xs = case bubble xs of
+                ys | ys == xs  -> ys
+                   | otherwise -> bsort ys
+  where bubble (x1:x2:xs) | x1 > x2   = x2:(bubble (x1:xs))
+                          | otherwise = x1:(bubble (x2:xs))
+        bubble x = x
+ 
+mmsort :: Ord a => [a] -> [a]
+mmsort [] = []
+mmsort [x] = [x]
+mmsort xs = min : (mmsort (xs \\ [min,max])) ++ [max]
+    where
+        min = minimum xs
+        max = maximum xs
+       
+ins :: Ord a => a -> [a] -> [a]
+ins v xs = foldr g (const [v]) xs xs
+    where
+        g x f xs    | v > x     = x : f (tail xs)
+                    | otherwise = v : xs
+                   
+altIns :: Ord a => a -> [a] -> [a]
+altIns v [] = [v]
+altIns v xt@(x:xs)  | v <= x    = v:xt
+                    | otherwise = x:(altIns v xs)
+ 
+isort :: Ord a => [a] -> [a]
+isort = foldr altIns []
+ 
+mysplit :: [a] -> ([a], [a])
+mysplit xs = splitAt ((length xs + 1) `div` 2) xs
+ 
+merge :: Ord a => [a] -> [a] -> [a]
+merge [] ys = ys
+merge xs [] = xs
+merge xs@(x:xt) ys@(y:yt) | x <= y    = x : merge xt ys
+                          | otherwise = y : merge xs yt
+ 
+msort :: Ord a => [a] -> [a]
+msort [] = []
+msort [x] = [x]
+msort xs = let (ys,zs) = mysplit xs
+           in merge (msort ys) (msort zs)
+ 
+qsort :: Ord a => [a] -> [a]
+qsort [] = []
+qsort (x:xs) = (qsort $ filter (<=x) xs) ++ [x] ++ (qsort $ filter (>x) xs)
+
+
