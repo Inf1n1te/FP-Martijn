@@ -196,6 +196,7 @@ subTree _ (Leaf1a i)			= error "Invalid path"
 subTree (s:str) (Node1a i a b)	| s == 'l'      = subTree str a
 								| s == 'r'      = subTree str b
 								| otherwise     = error "Invalid character in path"
+
 ---ex8
 --a
 isBalanced :: Tree4 -> Bool
