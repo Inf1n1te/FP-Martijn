@@ -16,7 +16,7 @@ import Data.Char
 
 data MultTree v = N v [MultTree v]
                         deriving Show
-
+exampleTree1 :: MultTree (Int,Int)
 exampleTree1 = N (50,2) [N (40,5) [N (30,2) [],N (45,2) [N (60,8) [N (61,1) [N (62,3) [N (63,50) []]]]],N (49,2) []],N (56,3) [N (55,2) [],N (57,3) []],N (60,8) [N (61,1) [N (62,3) [N (63,50) []]]],N (40,5) [N (30,2) [],N (45,2) [],N (49,2) []]]
 
 exampleTree1a :: MultTree (Int, Int) -> Tree1a
