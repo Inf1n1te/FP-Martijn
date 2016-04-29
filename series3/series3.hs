@@ -14,27 +14,27 @@ import Data.Char
 --        exampleTree1d exampleTree1
 
 
-data MultTree   = N (Int, Int) [MultTree]
+data MultTree v = N v [MultTree v]
                         deriving Show
 
 exampleTree1 = N (50,2) [N (40,5) [N (30,2) [],N (45,2) [N (60,8) [N (61,1) [N (62,3) [N (63,50) []]]]],N (49,2) []],N (56,3) [N (55,2) [],N (57,3) []],N (60,8) [N (61,1) [N (62,3) [N (63,50) []]]],N (40,5) [N (30,2) [],N (45,2) [],N (49,2) []]]
 
-exampleTree1a :: MultTree -> Tree1a
+exampleTree1a :: MultTree (Int, Int) -> Tree1a
 exampleTree1a (N (x,_) [])       = Leaf1a x
 exampleTree1a (N (x,_) [n])      = Node1a x (exampleTree1a n) (Leaf1a 0)
 exampleTree1a (N (x,_) (n:o:ns)) = Node1a x (exampleTree1a n) (exampleTree1a o)
 
-exampleTree1b :: MultTree -> Tree1b
+exampleTree1b :: MultTree (Int, Int) -> Tree1b
 exampleTree1b (N x [])       = Leaf1b x
 exampleTree1b (N x [n])      = Node1b x (exampleTree1b n) (Leaf1b (0,0))
 exampleTree1b (N x (n:o:ns)) = Node1b x (exampleTree1b n) (exampleTree1b o)
 
-exampleTree1c :: MultTree -> Tree1c
+exampleTree1c :: MultTree (Int, Int) -> Tree1c
 exampleTree1c (N (x,_) [])       = Leaf1c
 exampleTree1c (N (x,_) [n])      = Node1c x (exampleTree1c n) (Leaf1c)
 exampleTree1c (N (x,_) (n:o:ns)) = Node1c x (exampleTree1c n) (exampleTree1c o)
 
-exampleTree1d :: MultTree -> Tree1d
+exampleTree1d :: MultTree (Int, Int) -> Tree1d
 exampleTree1d (N x [])       = Leaf1d x
 exampleTree1d (N x [n])      = Node1d [exampleTree1d n]
 exampleTree1d (N x ns)     = Node1d (map exampleTree1d ns)
