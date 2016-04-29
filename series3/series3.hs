@@ -29,10 +29,10 @@ exampleTree1b (N x [])       = Leaf1b x
 exampleTree1b (N x [n])      = Node1b x (exampleTree1b n) (Leaf1b (0,0))
 exampleTree1b (N x (n:o:ns)) = Node1b x (exampleTree1b n) (exampleTree1b o)
 
-exampleTree1c :: MultTree -> Tree1c
+{-exampleTree1c :: MultTree -> Tree1c
 exampleTree1c (N (x,_) [])       = Leaf1c
 exampleTree1c (N (x,_) [n])      = Node1c x (exampleTree1c n) (Leaf1c)
-exampleTree1c (N (x,_) (n:o:ns)) = Node1c x (exampleTree1c n) (exampleTree1c o)
+exampleTree1c (N (x,_) (n:o:ns)) = Node1c x (exampleTree1c n) (exampleTree1c o)-}
 
 exampleTree1d :: MultTree -> Tree1d
 exampleTree1d (N x [])       = Leaf1d x
@@ -62,9 +62,9 @@ pp1b (Node1b i a b)     = RoseNode (show i) [pp1b a, pp1b b]
 --data Tree1c     = Leaf1c
 --                | Node1c Int Tree1c Tree1c
 --                        deriving Show
-data Tree1c		= Leaf1c Int
-				| Node1c Tree1c Tree1c
-					deriving Show
+data Tree1c     = Leaf1c Int
+                | Node1c Tree1c Tree1c
+                    deriving Show
 
 pp1c :: Tree1c -> RoseTree
 pp1c (Leaf1c n)           = RoseNode (show n) []
@@ -108,8 +108,8 @@ zipWithTree f (Node1b (x,y) a b)        = Node1a (x `f` y) (zipWithTree f a) (zi
 
 --new e -untested!
 mapTreeVar :: ((Int, Int) -> Int) -> Tree1b -> Tree1a
-mapTreeVar f (Leaf1b (x,y))		= Leaf1a (f x y)
-mapTreeVar f (Node1b (x,y) l r)	= Node1a (f x y) (mapTreeVar l) (mapTreeVar r)
+mapTreeVar f (Leaf1b (x,y))     = Leaf1a (f (x, y))
+mapTreeVar f (Node1b (x,y) l r) = Node1a (f (x, y)) (mapTreeVar f l) (mapTreeVar f r)
 
 ---ex3
 --a
@@ -123,20 +123,20 @@ binMirrorD (Leaf1d (x,y))       = Leaf1d (y,x)
 binMirrorD (Node1d a)           = Node1d (map binMirrorD (reverse a))
 
 --Tree 4 -untested!
-data Tree4	= Leaf4
-			| Node4 Int Tree4 Tree4
-				deriving Show
+data Tree4  = Leaf4
+            | Node4 Int Tree4 Tree4
+                deriving Show
 
 pp4 :: Tree4 -> RoseTree
-pp4 (Leaf4) 		= RoseNode "" []
-pp4 (Node4 n l r) 	= RoseNode (show n) (pp4 l) (pp4 r)
+pp4 (Leaf4)         = RoseNode "" []
+pp4 (Node4 n l r)   = RoseNode (show n) [pp4 l, pp4 r]
 
 ---ex4
 --a
 insertTree :: Int -> Tree4 -> Tree4
-insertTree n (Leaf4)		= Node4 n Leaf4 Leaf4
-insertTree n (Node4 i a b)	| n <= i        = Node4 i (insertTree n a) b
-							| n > i         = Node4 i a (insertTree n b)
+insertTree n (Leaf4)        = Node4 n Leaf4 Leaf4
+insertTree n (Node4 i a b)  | n <= i        = Node4 i (insertTree n a) b
+                            | n > i         = Node4 i a (insertTree n b)
 
 --b
 makeTree :: [Int] -> Tree4
@@ -162,10 +162,10 @@ sortTree tree = makeTree $ makeList tree
 
 ---ex5
 subtreeAt :: Int -> Tree4 -> Tree4
-subtreeAt i Leaf4			= error "Number not in tree"
-subtreeAt i (Node4 n a b)	| i == n        = (Node4 n a b)
-							| i < n         = subtreeAt i a
-							| i > n         = subtreeAt i b
+subtreeAt i Leaf4           = error "Number not in tree"
+subtreeAt i (Node4 n a b)   | i == n        = (Node4 n a b)
+                            | i < n         = subtreeAt i a
+                            | i > n         = subtreeAt i b
 
 ---ex6
 {-cutOffAt :: Int -> Tree1c -> Tree1c
@@ -174,28 +174,28 @@ cutOffAt 0 _                    = Leaf1c
 cutOffAt x (Node1c i a b)       = Node1c i (cutOffAt (x-1) a) (cutOffAt (x-1) b)-}
 --for a different type of tree -untested!
 cutOffAt :: Int -> Tree1a -> Tree1a
-cutOffAt _ (Leaf1a n) 		= Leaf1a n
-cutOffAt 0 (Node1a n _ _) 	= Leaf1a n
-cutOffAt x (Node1a n l r) 	= Node1a n (cutOffAt (x-1) l) (cutOffAt (x-1) r)
+cutOffAt _ (Leaf1a n)       = Leaf1a n
+cutOffAt 0 (Node1a n _ _)   = Leaf1a n
+cutOffAt x (Node1a n l r)   = Node1a n (cutOffAt (x-1) l) (cutOffAt (x-1) r)
 
 
 ---ex7
 --a
 replace :: Int -> [Char] -> Tree1a -> Tree1a
-replace x [] (Leaf1a _)				= Leaf1a x
-replace x [] (Node1a _ a b)			= Node1a x a b
-replace x _ (Leaf1a i)				= error "Invalid path"
-replace x (s:str) (Node1a i a b)	| s == 'l'      = Node1a i (replace x str a) b
-									| s == 'r'      = Node1a i a (replace x str b)
-									| otherwise     = error "Invalid character in path"
+replace x [] (Leaf1a _)             = Leaf1a x
+replace x [] (Node1a _ a b)         = Node1a x a b
+replace x _ (Leaf1a i)              = error "Invalid path"
+replace x (s:str) (Node1a i a b)    | s == 'l'      = Node1a i (replace x str a) b
+                                    | s == 'r'      = Node1a i a (replace x str b)
+                                    | otherwise     = error "Invalid character in path"
 --b
 subTree :: [Char] -> Tree1a -> Tree1a
-subTree [] (Leaf1a i)			= Leaf1a i
-subTree [] (Node1a i a b)		= Node1a i a b
-subTree _ (Leaf1a i)			= error "Invalid path"
-subTree (s:str) (Node1a i a b)	| s == 'l'      = subTree str a
-								| s == 'r'      = subTree str b
-								| otherwise     = error "Invalid character in path"
+subTree [] (Leaf1a i)           = Leaf1a i
+subTree [] (Node1a i a b)       = Node1a i a b
+subTree _ (Leaf1a i)            = error "Invalid path"
+subTree (s:str) (Node1a i a b)  | s == 'l'      = subTree str a
+                                | s == 'r'      = subTree str b
+                                | otherwise     = error "Invalid character in path"
 
 ---ex8
 --a
@@ -213,14 +213,14 @@ branchMinMax (Node4 i a b)     = ( (min (amin+1) (bmin+1)) , (max (amax+1) (bmax
 
 --untested!
 isBalancedAlt :: Tree4 -> Bool
-isBalanced t	= abs (max - min) < 2
-	where 
-		xs	= pathLengths t 0
-		(max, min) = (maximum xs, minimum xs)
+isBalancedAlt t = (max - min) < 2
+    where 
+        xs  = pathLengths t 0
+        (max, min) = (maximum xs, minimum xs)
 
 pathLengths :: Tree4 -> Int -> [Int]
 pathLengths Leaf4 n = [n]
-pathLengths (Node4 _ l r) n = (pathLengths l) ++ (pathLengths r) $ n + 1
+pathLengths (Node4 _ l r) n = (pathLengths l (n + 1)) ++ (pathLengths r (n + 1)) 
 
 --b
 fsthalf :: [Int] -> [Int]
