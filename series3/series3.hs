@@ -29,10 +29,11 @@ exampleTree1b (N x [])       = Leaf1b x
 exampleTree1b (N x [n])      = Node1b x (exampleTree1b n) (Leaf1b (0,0))
 exampleTree1b (N x (n:o:ns)) = Node1b x (exampleTree1b n) (exampleTree1b o)
 
-{-exampleTree1c :: MultTree (Int, Int) -> Tree1c
-exampleTree1c (N (x,_) [])       = Leaf1c
-exampleTree1c (N (x,_) [n])      = Node1c x (exampleTree1c n) (Leaf1c)
-exampleTree1c (N (x,_) (n:o:ns)) = Node1c x (exampleTree1c n) (exampleTree1c o)-}
+
+exampleTree4 :: MultTree -> Tree4
+exampleTree4 (N (x,_) [])       = Leaf4
+exampleTree4 (N (x,_) [n])      = Node4 x (exampleTree4 n) (Leaf4)
+exampleTree4 (N (x,_) (n:o:ns)) = Node4 x (exampleTree4 n) (exampleTree4 o)
 
 exampleTree1d :: MultTree (Int, Int) -> Tree1d
 exampleTree1d (N x [])       = Leaf1d x
