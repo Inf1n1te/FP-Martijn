@@ -107,7 +107,7 @@ zipWithTree :: (Int -> Int -> Int) -> Tree1b -> Tree1a
 zipWithTree f (Leaf1b (x,y))            = Leaf1a (x `f` y)
 zipWithTree f (Node1b (x,y) a b)        = Node1a (x `f` y) (zipWithTree f a) (zipWithTree f b)
 
---new e -untested!
+--new e
 mapTreeVar :: ((Int, Int) -> Int) -> Tree1b -> Tree1a
 mapTreeVar f (Leaf1b (x,y))     = Leaf1a (f (x, y))
 mapTreeVar f (Node1b (x,y) l r) = Node1a (f (x, y)) (mapTreeVar f l) (mapTreeVar f r)
@@ -212,7 +212,6 @@ branchMinMax (Node4 i a b)     = ( (min (amin+1) (bmin+1)) , (max (amax+1) (bmax
                                 (amin, amax) = branchMinMax a
                                 (bmin, bmax) = branchMinMax b
 
---untested!
 isBalancedAlt :: Tree4 -> Bool
 isBalancedAlt t = (max - min) < 2
     where 
