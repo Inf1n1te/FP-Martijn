@@ -14,6 +14,11 @@ coden n x       | ord(x) > 96 && ord(x) < 123         = chr(97 + mod (ord(x)-97+
                 | ord(x) > 64 && ord(x) < 91         = chr(65 + mod (ord(x)-65+n) 26)
                 | otherwise                         = x
 
+coden2 :: Int -> Char -> Char
+coden2 n x      | ord(x) > 96 && ord(x) < 122         = chr(97 + mod (ord(x)-97+n) 25)
+                | ord(x) > 64 && ord(x) < 90         = chr(65 + mod (ord(x)-65+n) 25)
+                | otherwise                         = x
+
 interest :: Floating a => a -> a -> a -> a
 interest a r n        = (a*(1+r)**n)
 
