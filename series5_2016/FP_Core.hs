@@ -153,6 +153,30 @@ stmnt2 = Assign 4 (BinExpr Mul
               (Const 12)
               (Const 5)))
 
+stmnt3 = Repeat (
+		BinExpr Add 
+		(Const 3) 
+		(Const 5)
+		) 
+		[
+		(
+		Assign 4 
+		(BinExpr Mul
+          		(BinExpr Add
+              		(BinExpr Mul
+                  		(Const 2)
+                  		(Const 10))
+             			(BinExpr Mul
+                  		(Const 3)
+                  		(BinExpr Add
+                      			(Const 4)
+                      			(Const 11))))
+          		(BinExpr Add
+              			(Const 12)
+              			(Const 5)))
+		)
+		]
+
 -- The program that results in the value of the expression (1105):
 {-prog = [ Push 2
        , Push 10
