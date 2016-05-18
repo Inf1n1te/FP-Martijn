@@ -190,7 +190,7 @@ prog = [ PushConst 2
 
 -- Testing
 clock      = repeat Tick
-emptyStack = replicate 8 0
+emptyStack = replicate 16 0
 emptyHeap  = replicate 8 0
 test       = putStr
            $ unlines
