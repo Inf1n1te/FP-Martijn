@@ -26,9 +26,14 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
 
               | Expr                          -- Expression
               | Nmbr                          -- Number
+              | Var                           -- Variable (self-defined)
               | Op                            -- Operation symbol
               | Space                         -- Spaces
               | Bracket                       -- Brackets
+              
+              | Stat                          -- Statements (self-defined)
+              | Asm                           -- Assignment (self-defined)
+              | Rep                           -- Repeat (self-defined)
               deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
 -- ===================================================================
