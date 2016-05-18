@@ -48,8 +48,9 @@ instance CodeGen Expr where
     codeGen (Const n)           = [PushConst n] 
 
 instance CodeGen Stmnt where
-    codeGen (Assign i expr)     = codeGen expr ++ [Store i]
-    codeGen (Repeat expr [stmnt]) = codeGen expr ++ [PushPC] ++ concat (map codeGen [stmnt]) ++ [EndRep]
+    codeGen (Assign i expr)       = codeGen expr ++ [Store i]
+    codeGen (Repeat expr stmnts) = codeGen expr ++ [PushPC] ++ concat (map codeGen stmnts) ++ [EndRep]
+
 
 
 class ToRose a where
@@ -165,6 +166,30 @@ stmnt3 = Assign 1 (BinExpr Mul
               (Const 12)
               (Const 5)))
 stmnt4 = Repeat expr [stmnt2, stmnt3]
+
+stmnt3 = Repeat (
+		BinExpr Add 
+		(Const 3) 
+		(Const 5)
+		) 
+		[
+		(
+		Assign 4 
+		(BinExpr Mul
+          		(BinExpr Add
+              		(BinExpr Mul
+                  		(Const 2)
+                  		(Const 10))
+             			(BinExpr Mul
+                  		(Const 3)
+                  		(BinExpr Add
+                      			(Const 4)
+                      			(Const 11))))
+          		(BinExpr Add
+              			(Const 12)
+              			(Const 5)))
+		)
+		]
 
 -- The program that results in the value of the expression (1105):
 {-prog = [ Push 2
