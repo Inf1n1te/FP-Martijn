@@ -48,8 +48,9 @@ instance CodeGen Expr where
     codeGen (Const n)           = [PushConst n] 
 
 instance CodeGen Stmnt where
-    codeGen (Assign i expr)     = codeGen expr ++ [Store i]
+    codeGen (Assign i expr)       = codeGen expr ++ [Store i]
     codeGen (Repeat expr [stmnt]) = codeGen expr ++ PushPC ++ map codeGen [stmnt] ++ EndRep
+
 
 
 class ToRose a where
