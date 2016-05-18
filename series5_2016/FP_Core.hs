@@ -36,6 +36,26 @@ data Expr = Const Int                   -- for constants
 
 data Stmnt = Assign Int Expr
 
+class CodeGen a where
+    codeGen :: a -> [Instr]
+
+instance CodeGen Expr where
+    codeGen (BinExpr op l r)    = codeGen l ++ codeGen r ++ [Calc op]
+    codeGen (Variable i)        = [PushAddr i]
+    codeGen (Const n)           = [PushConst n] 
+
+instance CodeGen Stmnt where
+    codeGen (Assign i expr) = codeGen expr ++ [Store i]
+
+class ToRose a where
+    toRose :: a -> RoseTree
+instance ToRose Stmnt where
+    toRose (Assign n expr)  = RoseNode ("var " ++ show n ++ " :=") [toRose expr]
+instance ToRose Expr where
+    toRose (Const n)        = RoseNode (show n) []
+    toRose (Variable i)     = RoseNode ("var " ++ show i) []
+    toRose (BinExpr op l r) = RoseNode (show op) [toRose l, toRose r]
+
 -- ========================================================================
 -- Processor functions
 
@@ -159,7 +179,7 @@ test       = putStr
 -- ========================================================================
 -- New Stuff
 -- ========================================================================
-codeGen :: Expr -> [Instr]
+{-codeGen :: Expr -> [Instr]
 codeGen expr = codeGen' expr ++ [EndProg]
 
 codeGen' :: Expr -> [Instr]
@@ -168,10 +188,13 @@ codeGen' (Variable i)        = [PushAddr i]
 codeGen' (Const n)           = [PushConst n]
 
 codeGen'' :: Stmnt -> [Instr]
-codeGen'' (Assign i expr)   = codeGen' expr ++ [Store i, EndProg]
+codeGen'' (Assign i expr)   = codeGen' expr ++ [Store i, EndProg]-}
 
-exprToRose :: Expr -> RoseTree
+codeGen' :: (CodeGen a) => a -> [Instr]
+codeGen' a  = codeGen a ++ [EndProg]
+
+{-exprToRose :: Expr -> RoseTree
 exprToRose (Const n)        = RoseNode (show n) []
 exprToRose (Variable i)     = RoseNode ("var " ++ show i) []
-exprToRose (BinExpr op l r) = RoseNode (show op) [exprToRose l, exprToRose r]
+exprToRose (BinExpr op l r) = RoseNode (show op) [exprToRose l, exprToRose r]-}
 
