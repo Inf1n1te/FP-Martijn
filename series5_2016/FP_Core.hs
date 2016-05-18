@@ -125,7 +125,7 @@ expr = BinExpr Mul
               (Const 12)
               (Const 5))
 
-stmnt = Assign 3 (BinExpr Mul
+stmnt = Assign 1 (BinExpr Mul
           (BinExpr Add
               (BinExpr Mul
                   (Const 2)
@@ -138,10 +138,10 @@ stmnt = Assign 3 (BinExpr Mul
           (BinExpr Add
               (Const 12)
               (Const 5)))
-stmnt2 = Assign 4 (BinExpr Mul
+stmnt2 = Assign 1 (BinExpr Mul
           (BinExpr Add
               (BinExpr Mul
-                  (Const 2)
+                  (Variable 1)
                   (Const 10))
               (BinExpr Mul
                   (Const 3)
@@ -151,6 +151,20 @@ stmnt2 = Assign 4 (BinExpr Mul
           (BinExpr Add
               (Const 12)
               (Const 5)))
+stmnt3 = Assign 1 (BinExpr Mul
+          (BinExpr Add
+              (BinExpr Mul
+                  (Variable 1)
+                  (Const 10))
+              (BinExpr Mul
+                  (Const 3)
+                  (BinExpr Add
+                      (Const 4)
+                      (Const 11))))
+          (BinExpr Add
+              (Const 12)
+              (Const 5)))
+stmnt4 = Repeat expr [stmnt2, stmnt3]
 
 -- The program that results in the value of the expression (1105):
 {-prog = [ Push 2
