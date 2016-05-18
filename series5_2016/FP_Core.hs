@@ -100,7 +100,7 @@ core instrs (pc,sp,heap,stack) tick =  case instrs!!pc of
                  where
                    v = alu op (stack!!(sp-2)) (stack!!(sp-1))
         
-        PushPC   -> (pc+1, sp+1, heap, stack <~ (sp,pc))
+        PushPC   -> (pc+1, sp+1, heap, stack <~ (sp,pc+1))
         
         EndRep   -> (progc, sp, heap, stack <~ (sp-2, stack!!(sp-2)-1))
                  where progc | stack!!(sp-2) > 0   = stack!!(sp-1)
@@ -167,7 +167,7 @@ stmnt3 = Assign 1 (BinExpr Mul
               (Const 5)))
 stmnt4 = Repeat expr [stmnt2, stmnt3]
 
-stmnt3 = Repeat (
+stmnt5 = Repeat (
 		BinExpr Add 
 		(Const 3) 
 		(Const 5)
