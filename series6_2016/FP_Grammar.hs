@@ -27,22 +27,29 @@ grammar nt = case nt of
 
         Op      -> [[ op                                 ]]
 
+        Var     -> [[ var                                ]]
+
         Expr    -> [[ lBracket, Expr, Op, Expr, rBracket ]
-                   ,[ Nmbr                               ]]
+                   ,[ Nmbr                               ]
+                   ,[ Var                                   ]]
+        Stat    -> [[ Var, asm, Expr                        ]
+                   ,[ rep, Expr, (+:) [Stat]                ]]
 
 
 -- shorthand names can be handy, such as:
 lBracket  = Terminal "("           -- Terminals WILL be shown in the parse tree
 rBracket  = Terminal ")"
+asm       = Terminal ":="
+rep       = Terminal "repeat"
 
 -- alternative:
 -- lBracket  = Symbol "("          -- Symbols will NOT be shown in the parse tree.
 -- rBracket  = Symbol ")"
 
-nmbr      = SyntCat Nmbr
-op        = SyntCat Op
+nmbr        = SyntCat Nmbr
+op          = SyntCat Op
 
-
+var         = SyntCat Var 
 
 -- ==========================================================================================================
 -- TESTING: example expression: "((10+20)*30)"
@@ -58,6 +65,32 @@ tokenList0 = [ (Bracket,"(",0)
              , (Nmbr,"30",7)
              , (Bracket,")",8)
              ]
+
+tokenList1 :: [Token]             
+tokenList1 = [ (Rep,        "repeat",   0)
+             , (Bracket,    "(",        1)
+             , (Nmbr,       "10",       2)
+             , (Op,         "+",        3)
+             , (Nmbr,       "20",       4)
+             , (Bracket,    ")",        5)
+             , (Var,        "a",        6)
+             , (Asm,        ":=",       7)
+             , (Bracket,    "(",        8)
+             , (Nmbr,       "3.5",      9)
+             , (Op,         "+",        10)
+             , (Nmbr,       "4",        11)
+             , (Bracket,    ")",        12)
+             , (Var,        "b",        13)
+             , (Asm,        ":=",       14)
+             , (Bracket,    "(",        15)
+             , (Nmbr,       "2.5",      16)
+             , (Op,         "+",        17)
+             , (Nmbr,       "8",        18)
+             , (Bracket,    ")",        19)
+             ]
+
+tokenList2 :: [Token]             
+tokenList2 = [ (Nmbr, "4",0) ]
 
 -- Parse this tokenlist with a call to the function parse, with
 --      - grammar: the name of the grammar above
