@@ -94,6 +94,20 @@ expr = BinExpr Mul
               (Const 12)
               (Const 5))
 
+expr2 = Assign 3 (BinExpr Mul
+          (BinExpr Add
+              (BinExpr Mul
+                  (Const 2)
+                  (Const 10))
+              (BinExpr Mul
+                  (Const 3)
+                  (BinExpr Add
+                      (Const 4)
+                      (Const 11))))
+          (BinExpr Add
+              (Const 12)
+              (Const 5)))
+
 -- The program that results in the value of the expression (1105):
 {-prog = [ Push 2
        , Push 10
@@ -152,6 +166,9 @@ codeGen' :: Expr -> [Instr]
 codeGen' (BinExpr op l r)    = codeGen' l ++ codeGen' r ++ [Calc op]
 codeGen' (Variable i)        = [PushAddr i]
 codeGen' (Const n)           = [PushConst n]
+
+codeGen'' :: Stmnt -> [Instr]
+codeGen'' (Assign i expr)   = codeGen' expr ++ [Store i, EndProg]
 
 exprToRose :: Expr -> RoseTree
 exprToRose (Const n)        = RoseNode (show n) []
