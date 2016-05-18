@@ -25,6 +25,8 @@ data Instr  = PushConst Int
             | PushAddr Int 
             | Store Int
             | Calc Op
+            | PushPC
+            | EndRep
             | EndProg
             deriving Show
 
@@ -35,6 +37,7 @@ data Expr = Const Int                   -- for constants
           | BinExpr Op Expr Expr        -- for ``binary expressions''
 
 data Stmnt = Assign Int Expr
+           | Repeat Expr [Stmnt]
 
 class CodeGen a where
     codeGen :: a -> [Instr]
@@ -45,7 +48,9 @@ instance CodeGen Expr where
     codeGen (Const n)           = [PushConst n] 
 
 instance CodeGen Stmnt where
-    codeGen (Assign i expr) = codeGen expr ++ [Store i]
+    codeGen (Assign i expr)     = codeGen expr ++ [Store i]
+    codeGen (Repeat expr [stmnt]) = codeGen expr ++ PushPC ++ map codeGen [stmnt] ++ EndRep
+
 
 class ToRose a where
     toRose :: a -> RoseTree
@@ -93,7 +98,13 @@ core instrs (pc,sp,heap,stack) tick =  case instrs!!pc of
         Calc op  -> (pc+1, sp-1 , heap, stack <~ (sp-2,v))
                  where
                    v = alu op (stack!!(sp-2)) (stack!!(sp-1))
-
+        
+        PushPC   -> (pc+1, sp+1, heap, stack <~ (sp,pc))
+        
+        EndRep   -> (progc, sp, heap, stack <~ (sp-2, stack!!(sp-2)-1))
+                 where progc | stack!!(sp-2) > 0   = stack!!(sp-1)
+                             | otherwise           = pc+1
+        
         EndProg  -> (-1, sp, heap, stack)
 
 -- ========================================================================
