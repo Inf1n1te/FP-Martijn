@@ -49,7 +49,7 @@ instance CodeGen Expr where
 
 instance CodeGen Stmnt where
     codeGen (Assign i expr)       = codeGen expr ++ [Store i]
-    codeGen (Repeat expr [stmnt]) = codeGen expr ++ [PushPC] ++ concat (map codeGen [stmnt]) ++ [EndRep]
+    codeGen (Repeat expr stmnts) = codeGen expr ++ [PushPC] ++ concat (map codeGen stmnts) ++ [EndRep]
 
 
 
