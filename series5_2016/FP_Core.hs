@@ -167,7 +167,7 @@ stmnt3 = Assign 1 (BinExpr Mul
               (Const 5)))
 stmnt4 = Repeat expr [stmnt2, stmnt3]
 
-stmnt3 = Repeat (
+stmnt5 = Repeat (
 		BinExpr Add 
 		(Const 3) 
 		(Const 5)
