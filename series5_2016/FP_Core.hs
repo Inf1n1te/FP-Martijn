@@ -114,7 +114,20 @@ expr = BinExpr Mul
               (Const 12)
               (Const 5))
 
-expr2 = Assign 3 (BinExpr Mul
+stmnt = Assign 3 (BinExpr Mul
+          (BinExpr Add
+              (BinExpr Mul
+                  (Const 2)
+                  (Const 10))
+              (BinExpr Mul
+                  (Const 3)
+                  (BinExpr Add
+                      (Const 4)
+                      (Const 11))))
+          (BinExpr Add
+              (Const 12)
+              (Const 5)))
+stmnt2 = Assign 4 (BinExpr Mul
           (BinExpr Add
               (BinExpr Mul
                   (Const 2)
@@ -174,6 +187,13 @@ test       = putStr
            $ takeWhile (\(pc,_,_,_) -> pc /= -1)
 
            $ scanl (core prog) (0,0,emptyHeap,emptyStack) clock
+test2 p    = putStr
+           $ unlines
+           $ map show
+           $ takeWhile (\(pc,_,_,_) -> pc /= -1)
+
+           $ scanl (core p) (0,0,emptyHeap,emptyStack) clock
+           
 
 
 -- ========================================================================
@@ -190,8 +210,11 @@ codeGen' (Const n)           = [PushConst n]
 codeGen'' :: Stmnt -> [Instr]
 codeGen'' (Assign i expr)   = codeGen' expr ++ [Store i, EndProg]-}
 
-codeGen' :: (CodeGen a) => a -> [Instr]
-codeGen' a  = codeGen a ++ [EndProg]
+codeGen' :: (CodeGen a) => [a] -> [Instr]
+codeGen' a  = concat (map (codeGen) a) ++ [EndProg]
+
+{-codeGen' :: (CodeGen a) => a -> [Instr]
+codeGen' a  = codeGen a ++ [EndProg]-}
 
 {-exprToRose :: Expr -> RoseTree
 exprToRose (Const n)        = RoseNode (show n) []
