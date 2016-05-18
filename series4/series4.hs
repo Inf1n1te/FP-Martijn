@@ -39,7 +39,8 @@ instance Show Unit where
 
 type Tree1a     = BinTree Int Int 
 type Tree1b     = BinTree (Int, Int) (Int, Int)
-type Tree1c     = BinTree Unit Int
+type Tree1c     = BinTree Int Unit
+type Tree4      = BinTree Unit Int
 
 --c
 pp :: (Show a, Show b) => BinTree a b -> RoseTree
@@ -51,10 +52,10 @@ pp (BinNode x a b)      = RoseNode (show x) [pp a, pp b]
 -- E -> '(' E O E ')'
 -- E -> N
 -- N -> [0..9]
--- O -> ['+', '-', '/', '^']
+-- O -> ['+', '-', '*', '/', '^']
 
 isOperand1 :: Char -> Bool
-isOperand1 x = elem x "+=/^"
+isOperand1 x = elem x "+=/^*"
 
 data Expr = E | N | O | V
         deriving Show
@@ -147,11 +148,10 @@ fsa1 Ident x    | isDigit x     = Ident
                 | x == ')'      = BraceC
                 | otherwise     = error "parse error on ident"
 
-testFsa = scanl fsa1 Func "((x123r4^23)+3)"
+testFsa = scanl fsa1 Func "((x123r4^23) + 3)"
 
 tokenize :: [Char] -> [(String, CalcFsaState)]
-tokenize ys     = concatOnSnd $ zip (map (\x -> [x]) xs) (tail $scanl fsa1 Func xs)
-                        where xs = filter (/= ' ') ys
+tokenize xs     = concatOnSnd $ zip (map (\x -> [x]) xs) (tail $scanl fsa1 Func xs)
 
 concatOnSnd :: [(String, CalcFsaState)] -> [(String, CalcFsaState)]
 concatOnSnd [x] = [x]
