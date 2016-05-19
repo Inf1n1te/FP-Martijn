@@ -125,14 +125,30 @@ resWord = map resWord'
                 res = ["while","if","then","repeat","else"]
         resWord' x          = x
 
-data AST = ASTRoot [ASTStat]
-         | ASTStat String ASTExpr
-         | ASTStat Rep ASTExpr [ASTStat]
-         | ASTExpr ASTExpr String ASTExpr
-         | ASTExpr Nmbr String
-         | ASTExpr Var String
+data AST = ASTRoot [AST]
+         | ASTStat String AST [AST] [AST]
+         | ASTExpr String [AST]
+            deriving Show
          
 ptreeToAst :: ParseTree -> AST
 
-ptreeToAst 
+ptreeToAst (PNode Program l) = ASTRoot (map ptreeToAst $ tail $ init l)
+ptreeToAst (PNode Stat ((PLeaf (Rep,_,_)):e:_:ss) )
+    = ASTStat "repeat" (ptreeToAst e) (map ptreeToAst $ init ss) []
+ptreeToAst (PNode Stat ((PNode Var [PLeaf (_,v,_)]):(PLeaf (Asm,_,_)):e) )
+    = ASTStat (v ++ " := ") (ptreeToAst $ head e) [] []
+ptreeToAst (PNode Expr ((PLeaf (Bracket,_,_)):f:(PNode Op [PLeaf (_,o,_)]):s:_))
+    = ASTExpr o [ptreeToAst f, ptreeToAst s]
+ptreeToAst (PNode Expr [(PNode Nmbr [PLeaf (_,n,_)])])
+    = ASTExpr n []
+ptreeToAst (PNode Expr [(PNode Var [PLeaf (_,n,_)])])
+    = ASTExpr n []
+ptreeToAst e
+    = error $ show e
+
+astToRose :: AST -> RoseTree
+astToRose (ASTRoot e) = RoseNode "program" (map astToRose e)
+astToRose (ASTStat str expr stat1 stat2) = RoseNode str [astToRose expr, RoseNode "" (map astToRose stat1), RoseNode "" (map astToRose stat2)]
+astToRose (ASTExpr str []) = RoseNode str []
+astToRose (ASTExpr str exprs) = RoseNode str (map astToRose exprs)
 

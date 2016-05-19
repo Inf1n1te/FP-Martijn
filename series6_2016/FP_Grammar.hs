@@ -34,8 +34,8 @@ grammar nt = case nt of
                    ,[ Var                                   ]]
         Stat    -> [[ Var, asm, Expr                        ]
                    ,[ rep, Expr, lBrace, (+:) [Stat], rBrace]
-                   ,[ Expr                                  ]
-        Program -> [[ (+:) [Stat]                           ]]
+                   ,[ Expr                                  ]]
+        Program -> [[ lBrace, (+:) [Stat], rBrace           ]]
 
 
 -- shorthand names can be handy, such as:
@@ -70,28 +70,30 @@ tokenList0 = [ (Bracket,"(",0)
              ]
 
 tokenList1 :: [Token]             
-tokenList1 = [ (Rep,        "repeat",   0)
-             , (Bracket,    "(",        1)
-             , (Nmbr,       "10",       2)
-             , (Op,         "+",        3)
-             , (Nmbr,       "20",       4)
-             , (Bracket,    ")",        5)
-             , (Brace,      "{",        6)
-             , (Var,        "if",       7)
-             , (Asm,        ":=",       8)
-             , (Bracket,    "(",        9)
-             , (Nmbr,       "3.5",      10)
-             , (Op,         "+",        11)
-             , (Nmbr,       "4",        12)
-             , (Bracket,    ")",        13)
-             , (Brace,      "}",        14)        
-             , (Var,        "b",        15)
-             , (Asm,        ":=",       16)
-             , (Bracket,    "(",        17)
-             , (Nmbr,       "2.5",      18)
-             , (Op,         "+",        19)
-             , (Nmbr,       "8",        20)
-             , (Bracket,    ")",        21)
+tokenList1 = [ (Brace,      "{",        0)
+             , (Rep,        "repeat",   1)
+             , (Bracket,    "(",        2)
+             , (Nmbr,       "10",       3)
+             , (Op,         "+",        4)
+             , (Nmbr,       "20",       5)
+             , (Bracket,    ")",        6)
+             , (Brace,      "{",        7)
+             , (Var,        "a",        8)
+             , (Asm,        ":=",       9)
+             , (Bracket,    "(",        10)
+             , (Nmbr,       "3.5",      11)
+             , (Op,         "+",        12)
+             , (Nmbr,       "4",        13)
+             , (Bracket,    ")",        14)
+             , (Brace,      "}",        15)        
+             , (Var,        "b",        16)
+             , (Asm,        ":=",       17)
+             , (Bracket,    "(",        18)
+             , (Nmbr,       "2.5",      19)
+             , (Op,         "+",        20)
+             , (Nmbr,       "8",        21)
+             , (Bracket,    ")",        22)
+             , (Brace,      "}",        23)
              ]
 
 tokenList2 :: [Token]             
