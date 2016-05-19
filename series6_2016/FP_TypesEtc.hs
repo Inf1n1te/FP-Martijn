@@ -31,8 +31,9 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Space                         -- Spaces
               | Bracket                       -- Brackets
               | Brace                         -- Braces
-              | Rsvd
+              | Rsvd                          -- Reserved word
               
+              | Program                       -- Program (self-defined)
               | Stat                          -- Statements (self-defined)
               | Asm                           -- Assignment (self-defined)
               | Rep                           -- Repeat (self-defined)
@@ -113,4 +114,25 @@ toStrings tree = case tree of
 
 prpr t  = putStr $ ('\n':) $ (++"\n") $ unlines $ toStrings t
 
+--------------- Own stuff ----------------------
+
+resWord :: [Token] -> [Token]
+resWord = map resWord'
+    where
+        resWord' (Var,b,c)  | elem b res = (Rsvd,b,c)
+                            | otherwise  = (Var,b,c)
+            where
+                res = ["while","if","then","repeat","else"]
+        resWord' x          = x
+
+data AST = ASTRoot [ASTStat]
+         | ASTStat String ASTExpr
+         | ASTStat Rep ASTExpr [ASTStat]
+         | ASTExpr ASTExpr String ASTExpr
+         | ASTExpr Nmbr String
+         | ASTExpr Var String
+         
+ptreeToAst :: ParseTree -> AST
+
+ptreeToAst 
 
