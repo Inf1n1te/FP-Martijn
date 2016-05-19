@@ -30,6 +30,8 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Op                            -- Operation symbol
               | Space                         -- Spaces
               | Bracket                       -- Brackets
+              | Brace                         -- Braces
+              | Rsvd
               
               | Stat                          -- Statements (self-defined)
               | Asm                           -- Assignment (self-defined)
