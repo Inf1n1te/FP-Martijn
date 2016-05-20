@@ -34,7 +34,7 @@ grammar nt = case nt of
                    ,[ Var                                   ]]
         Stat    -> [[ Var, asm, Expr                        ]
                    ,[ rep, Expr, lBrace, (+:) [Stat], rBrace]
-		           ,[ ifstr, lBrace, Expr, rBrace, thenstr, lBrace, (+:) [Stat], rBrace, elsestr, lBrace, (*:) [Stat], rBrace ]
+		           ,[ ifstr, Expr, thenstr, lBrace, (+:) [Stat], rBrace, Opt [elsestr, lBrace, (*:) [Stat], rBrace] ]
                    ,[ Expr                                  ]]
         Program -> [[ lBrace, (+:) [Stat], rBrace           ]]
 
@@ -99,9 +99,58 @@ tokenList1 = [ (Brace,      "{",        0)
              , (Bracket,    ")",        22)
              , (Brace,      "}",        23)
              ]
+             
+tokenList2 = [ (Brace,      "{")
+             , (Rep,        "repeat")
+             , (Bracket,    "(")
+             , (Nmbr,       "10")
+             , (Op,         "+")
+             , (Nmbr,       "20")
+             , (Bracket,    ")")
+             , (Brace,      "{")
+             , (Var,        "a")
+             , (Asm,        ":=")
+             , (Bracket,    "(")
+             , (Nmbr,       "3.5")
+             , (Op,         "+")
+             , (Nmbr,       "4")
+             , (Bracket,    ")")
+             , (Brace,      "}") 
+             , (If,         "if") 
+             , (Bracket,    "(") 
+             , (Nmbr,       "3") 
+             , (Op,         "<") 
+             , (Var,        "a") 
+             , (Bracket,    ")") 
+             , (Then,       "then") 
+             , (Brace,      "{") 
+             , (Var,        "b")
+             , (Asm,        ":=")
+             , (Bracket,    "(")
+             , (Nmbr,       "2.5")
+             , (Op,         "+")
+             , (Nmbr,       "8")
+             , (Bracket,    ")")
+             , (Brace,      "}")       
+             , (Var,        "b")
+             , (Asm,        ":=")
+             , (Bracket,    "(")
+             , (Nmbr,       "2.5")
+             , (Op,         "+")
+             , (Nmbr,       "8")
+             , (Bracket,    ")")
+             , (Brace,      "}")
+             ]
 
-tokenList2 :: [Token]             
-tokenList2 = [ (Nmbr, "4",0) ]
+toTokenList :: [(Alphabet, [Char])] -> [Token]
+toTokenList tl = zipWith (toTokenList') tl [0..]
+
+toTokenList' :: (Alphabet, [Char]) -> Int -> Token
+toTokenList' (a, chrs) n = (a, chrs, n) 
+
+tokenToString :: [Token] -> String
+tokenToString [(_,s,_)]     = s
+tokenToString ((_,s,_):tks) = s ++ tokenToString tks
 
 -- Parse this tokenlist with a call to the function parse, with
 --      - grammar: the name of the grammar above
