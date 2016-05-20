@@ -164,4 +164,6 @@ testTxt    = prpr parseTree0
 -- showTree + toRoseTree: for graphical representation in browser
 testGr     = showTree $ toRoseTree parseTree0
 
+testShow2  = showTree $ astToRose $ ptreeToAst $ parse grammar Program $ resWord $ toTokenList tokenList2
+
 
