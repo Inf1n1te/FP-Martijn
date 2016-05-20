@@ -151,7 +151,12 @@ ptreeToAst e
 
 astToRose :: AST -> RoseTree
 astToRose (ASTRoot e) = RoseNode "program" (map astToRose e)
-astToRose (ASTStat str expr stat1 stat2) = RoseNode str [astToRose expr, RoseNode "" (map astToRose stat1), RoseNode "" (map astToRose stat2)]
+astToRose (ASTStat str expr stat1 stat2) = RoseNode str buildlist
+    where
+        buildlist   | length stat1 > 0 && (length stat2 > 0)    = [astToRose expr, RoseNode "" (map astToRose stat1), RoseNode "" (map astToRose stat2)]
+                    | length stat1 > 0                          = [astToRose expr, RoseNode "" (map astToRose stat1)]
+                    | length stat2 > 0                          = [astToRose expr, RoseNode "" (map astToRose stat2)]
+                    | otherwise                                 = [astToRose expr]
 astToRose (ASTExpr str []) = RoseNode str []
 astToRose (ASTExpr str exprs) = RoseNode str (map astToRose exprs)
 
