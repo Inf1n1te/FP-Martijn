@@ -37,6 +37,9 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Stat                          -- Statements (self-defined)
               | Asm                           -- Assignment (self-defined)
               | Rep                           -- Repeat (self-defined)
+              | If                            -- If (self-defined)
+              | Then                          -- Then (self-defined)
+              | Else                          -- Else (self-defined)
               deriving (Eq,Ord,Show,Generic,ToRoseTree)
 
 -- ===================================================================

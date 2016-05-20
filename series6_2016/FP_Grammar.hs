@@ -34,6 +34,7 @@ grammar nt = case nt of
                    ,[ Var                                   ]]
         Stat    -> [[ Var, asm, Expr                        ]
                    ,[ rep, Expr, lBrace, (+:) [Stat], rBrace]
+		           ,[ ifstr, lBrace, Expr, rBrace, thenstr, lBrace, (+:) [Stat], rBrace, elsestr, lBrace, (*:) [Stat], rBrace ]
                    ,[ Expr                                  ]]
         Program -> [[ lBrace, (+:) [Stat], rBrace           ]]
 
@@ -45,6 +46,9 @@ lBrace    = Terminal  "{"
 rBrace    = Terminal  "}"
 asm       = Terminal ":="
 rep       = Terminal "repeat"
+ifstr     = Terminal "if"
+thenstr   = Terminal "then"
+elsestr   = Terminal "else"
 
 -- alternative:
 -- lBracket  = Symbol "("          -- Symbols will NOT be shown in the parse tree.
