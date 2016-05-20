@@ -138,6 +138,10 @@ ptreeToAst :: ParseTree -> AST
 ptreeToAst (PNode Program l) = ASTRoot (map ptreeToAst $ tail $ init l)
 ptreeToAst (PNode Stat ((PLeaf (Rep,_,_)):e:_:ss) )
     = ASTStat "repeat" (ptreeToAst e) (map ptreeToAst $ init ss) []
+ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):_:(PNode Stat th):_:(PLeaf (Else,_,_)):_:(PNode Stat el):_) )
+    = ASTStat "if" (ptreeToAst e) (map ptreeToAst th) (map ptreeToAst el)
+ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):_:(PNode Stat th):_) )
+    = ASTStat "if" (ptreeToAst e) (map ptreeToAst th) []
 ptreeToAst (PNode Stat ((PNode Var [PLeaf (_,v,_)]):(PLeaf (Asm,_,_)):e) )
     = ASTStat (v ++ " := ") (ptreeToAst $ head e) [] []
 ptreeToAst (PNode Expr ((PLeaf (Bracket,_,_)):f:(PNode Op [PLeaf (_,o,_)]):s:_))

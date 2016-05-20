@@ -34,7 +34,7 @@ grammar nt = case nt of
                    ,[ Var                                   ]]
         Stat    -> [[ Var, asm, Expr                        ]
                    ,[ rep, Expr, lBrace, (+:) [Stat], rBrace]
-		           ,[ ifstr, Expr, thenstr, lBrace, (+:) [Stat], rBrace, Opt [elsestr, lBrace, (*:) [Stat], rBrace] ]
+                   ,[ ifstr, Expr, thenstr, lBrace, (+:) [Stat], rBrace, Opt [elsestr, lBrace, (*:) [Stat], rBrace] ]
                    ,[ Expr                                  ]]
         Program -> [[ lBrace, (+:) [Stat], rBrace           ]]
 
