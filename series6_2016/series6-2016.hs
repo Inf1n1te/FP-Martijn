@@ -7,6 +7,7 @@ data Expr   = Const Int
             | Boolean Bool
             | Var String
             | BinOp String Expr Expr
+            | If Expr Then [Expr] Else [Expr]
             | App Expr Expr
     deriving Show
 data Type   = IntType 
