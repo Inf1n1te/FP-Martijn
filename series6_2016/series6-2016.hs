@@ -15,7 +15,6 @@ data Type   = IntType
     deriving Show
 
 type Env = [(String, Type)]
-
 env :: Env
 env =   [("+", FunType IntType (FunType IntType IntType))
         ,("-", FunType IntType (FunType IntType IntType))

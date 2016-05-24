@@ -33,10 +33,11 @@ grammar nt = case nt of
                    ,[ Nmbr                               ]
                    ,[ Var                                   ]]
         Stat    -> [[ Var, asm, Expr                        ]
-                   ,[ rep, Expr, lBrace, (+:) [Stat], rBrace]
-                   ,[ ifstr, Expr, thenstr, lBrace, (+:) [Stat], rBrace, Opt [elsestr, lBrace, (*:) [Stat], rBrace] ]
+                   ,[ rep, Expr, Block                      ]
+                   ,[ ifstr, Expr, thenstr, Block, Opt [elsestr, Block]]
                    ,[ Expr                                  ]]
-        Program -> [[ lBrace, (+:) [Stat], rBrace           ]]
+        Block   -> [[ lBrace, (+:) [Stat], rBrace           ]]
+        Program -> [[ Block                                 ]]
 
 
 -- shorthand names can be handy, such as:
@@ -124,7 +125,7 @@ tokenList2 = [ (Brace,      "{")
              , (Bracket,    ")") 
              , (Then,       "then") 
              , (Brace,      "{") 
-             , (Var,        "b")
+             , (Var,        "c")
              , (Asm,        ":=")
              , (Bracket,    "(")
              , (Nmbr,       "2.5")

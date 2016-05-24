@@ -102,9 +102,12 @@ core instrs (pc,sp,heap,stack) tick =  case instrs!!pc of
         
         PushPC   -> (pc+1, sp+1, heap, stack <~ (sp,pc+1))
         
-        EndRep   -> (progc, sp, heap, stack <~ (sp-2, stack!!(sp-2)-1))
-                 where progc | stack!!(sp-2) > 0   = stack!!(sp-1)
+        EndRep   -> (progc, sp', heap, stack <~ (sp-2, stack!!(sp-2)-1))
+                 where progc | stack!!(sp-2) > 1   = stack!!(sp-1)
                              | otherwise           = pc+1
+                       sp'   | stack!!(sp-2) > 1   = sp
+                             | otherwise           = sp-2
+                             
         
         EndProg  -> (-1, sp, heap, stack)
 
@@ -190,6 +193,12 @@ stmnt5 = Repeat (
               			(Const 5)))
 		)
 		]
+
+stmnt6  = Repeat ( Const 5 ) 
+            [
+            Repeat (Const 4)
+                [Assign 4 (BinExpr Add (Const 1) (Variable 4))]
+            ]
 
 -- The program that results in the value of the expression (1105):
 {-prog = [ Push 2

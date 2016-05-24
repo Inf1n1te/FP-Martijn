@@ -31,10 +31,11 @@ data Alphabet = Terminal String               -- Terminal symbol: WILL be includ
               | Space                         -- Spaces
               | Bracket                       -- Brackets
               | Brace                         -- Braces
-              | Rsvd                          -- Reserved word
+              | Rsvd                          -- Reserved word (self-defined)
               
               | Program                       -- Program (self-defined)
               | Stat                          -- Statements (self-defined)
+              | Block                         -- Block statement (self-defined)
               | Asm                           -- Assignment (self-defined)
               | Rep                           -- Repeat (self-defined)
               | If                            -- If (self-defined)
@@ -131,16 +132,39 @@ resWord = map resWord'
 data AST = ASTRoot [AST]
          | ASTStat String AST [AST] [AST]
          | ASTExpr String [AST]
+         | ASTBlock [AST]
+         | ASTLeaf
             deriving Show
          
 ptreeToAst :: ParseTree -> AST
+ptreeToAst (PNode Program l)
+    = ASTRoot (map ptreeToAst l)
+ptreeToAst (PNode Stat (st@(PLeaf (Rep,_,_)):e:bl:_))
+    = ASTStat "repeat" (ptreeToAst e) [(ptreeToAst bl)] []
+ptreeToAst (PNode Stat (st@(PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):th:(PLeaf (Else,_,_)):el:_))
+    = ASTStat "if" (ptreeToAst e) [(ptreeToAst th)] [(ptreeToAst el)]
+ptreeToAst (PNode Stat (st@(PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):th:_))
+    = ASTStat "if" (ptreeToAst e) [(ptreeToAst th)] []
+ptreeToAst (PNode Block l)
+    = ASTBlock (map ptreeToAst l)
+ptreeToAst (PNode Stat ((PNode Var [PLeaf (_,v,_)]):(PLeaf (Asm,_,_)):e:_) )
+    = ASTStat (v ++ " := ") (ptreeToAst e) [] []
+ptreeToAst (PNode Expr ((PLeaf (Bracket,_,_)):f:(PNode Op [PLeaf (_,o,_)]):s:_))
+    = ASTExpr o [ptreeToAst f, ptreeToAst s]
+ptreeToAst (PNode Expr [(PNode Nmbr [PLeaf (_,n,_)])])
+    = ASTExpr n []
+ptreeToAst (PNode Expr [(PNode Var [PLeaf (_,n,_)])])
+    = ASTExpr n []
+ptreeToAst e
+    = ASTLeaf
 
+{-
 ptreeToAst (PNode Program l) = ASTRoot (map ptreeToAst $ tail $ init l)
 ptreeToAst (PNode Stat ((PLeaf (Rep,_,_)):e:_:ss) )
     = ASTStat "repeat" (ptreeToAst e) (map ptreeToAst $ init ss) []
-ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):_:(PNode Stat th):_:(PLeaf (Else,_,_)):_:(PNode Stat el):_) )
+ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):(PLeaf (Bracket,_,_)):th:(PLeaf (Bracket,_,_)):(PLeaf (Else,_,_)):(PLeaf (Bracket,_,_)):el:(PLeaf (Bracket,_,_)):_) )
     = ASTStat "if" (ptreeToAst e) (map ptreeToAst th) (map ptreeToAst el)
-ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):_:(PNode Stat th):_) )
+ptreeToAst (PNode Stat ((PLeaf (If,_,_)):e:(PLeaf (Then,_,_)):(PLeaf (Bracket,_,_)):th:(PLeaf (Bracket,_,_)):_))
     = ASTStat "if" (ptreeToAst e) (map ptreeToAst th) []
 ptreeToAst (PNode Stat ((PNode Var [PLeaf (_,v,_)]):(PLeaf (Asm,_,_)):e) )
     = ASTStat (v ++ " := ") (ptreeToAst $ head e) [] []
@@ -152,9 +176,11 @@ ptreeToAst (PNode Expr [(PNode Var [PLeaf (_,n,_)])])
     = ASTExpr n []
 ptreeToAst e
     = error $ show e
+-}
 
 astToRose :: AST -> RoseTree
 astToRose (ASTRoot e) = RoseNode "program" (map astToRose e)
+astToRose (ASTBlock e) = RoseNode "block" (map astToRose $ init $ tail e)
 astToRose (ASTStat str expr stat1 stat2) = RoseNode str buildlist
     where
         buildlist   | length stat1 > 0 && (length stat2 > 0)    = [astToRose expr, RoseNode "" (map astToRose stat1), RoseNode "" (map astToRose stat2)]
@@ -163,4 +189,4 @@ astToRose (ASTStat str expr stat1 stat2) = RoseNode str buildlist
                     | otherwise                                 = [astToRose expr]
 astToRose (ASTExpr str []) = RoseNode str []
 astToRose (ASTExpr str exprs) = RoseNode str (map astToRose exprs)
-
+astToRose (ASTLeaf) = RoseNode "" []
