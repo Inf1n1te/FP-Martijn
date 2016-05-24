@@ -33,7 +33,8 @@ typeOf :: Env -> Expr -> Type
 typeOf env (Const _)        = IntType
 typeOf env (Boolean _)      = BoolType
 typeOf env (Var str)        = (fromList env)!str
-typeOf env (BinOp op e1 e2) = case t_op of FunType t0 (FunType t1 t2)
+typeOf env (BinOp op e1 e2) = case t_op of 
+    FunType t0 (FunType t1 t2)
         | t0 == t_e1 && t1 == t_e2  -> t2
         | otherwise                 -> error "Types do not match"
     where
