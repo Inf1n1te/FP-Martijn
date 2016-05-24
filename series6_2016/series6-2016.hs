@@ -26,6 +26,10 @@ env =   [("+", FunType IntType (FunType IntType IntType))
         ,("x", IntType)
         ,("y", IntType)
         ,("z", IntType)
+
+        ,("a", BoolType)
+        ,("b", BoolType)
+        ,("c", BoolType)
         ]
 
 
