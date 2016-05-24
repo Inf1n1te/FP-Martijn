@@ -10,6 +10,7 @@ data Expr   = Const Int
             | Var String
             | BinOp String Expr Expr
             | If Expr Expr Expr
+            | Lambda Expr Type Expr
             | App Expr Expr
     deriving Show
 data Type   = IntType 
@@ -52,3 +53,7 @@ typeOf env (BinOp op e1 e2) = case t_op of
         t_op    = (fromList env)!op
         t_e1    = typeOf env e1
         t_e2    = typeOf env e2
+typeOf env (Lambda e1 t1 e2)    | t_e1 == t1    = typeOf env e2
+                                | otherwise     = error "Types do not match"
+    where
+        t_e1 = typeOf env e1
