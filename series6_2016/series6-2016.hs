@@ -10,7 +10,6 @@ data Type   = IntType
             | FunType Type Type
 
 type Env = [(String, Type)]
-
 env :: Env
 env =   [("+", FunType IntType (FunType IntType IntType))
         ,("-", FunType IntType (FunType IntType IntType))
