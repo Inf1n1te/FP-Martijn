@@ -1,0 +1,16 @@
+Ice Cream Stand		Town			Day of the Week		Ice Cream Flavor
+------------------------------------------------------------------------
+Alice's				Boulder			Thursday			Chocolate Chip
+Gary's				Marsh			Tuesday				Peppermint Stick
+Sally's				Granite			Wednesday			Coffee Bean
+Tom's				Rockland		Friday				Peanut Butter
+
+------------------------------------------------------------------------
+------------------------------------------------------------------------
+
+Ice Cream Stand		Town			Day of the Week		Ice Cream Flavor
+------------------------------------------------------------------------
+Alice's				Rockland		Thursday			Chocolate Chip
+Gary's				Marsh			Tuesday				Peppermint Stick
+Sally's				Granite			Wednesday			Coffee Bean
+Tom's				Boulder			Friday				Peanut Butter
