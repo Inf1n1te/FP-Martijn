@@ -2,6 +2,13 @@
 :- use_module(library(lists)).
 
 
+nonmember(_, []) :- !.
+
+nonmember(X, [Head|Tail]) :-
+     X \= Head,
+    nonmember(X, Tail).
+
+
 
 
 /**
@@ -63,9 +70,8 @@ stand(_,_,_,_).
 
 tour([stand(_,_,tuesday,_), stand(_,_,wednesday,_), stand(_,_,thursday,_), stand(_,_,friday,_)]).
 
-icecream([stand(S,C,D,I)], [S,C,I]) :- stand(S), city(C), ice(I), stand(S,C,D,I).
-icecream([stand(S,C,D,I)|Tour], [S,C,I|Rest]) :- stand(S), city(C), ice(I), member(S,Rest), member(C,Rest), member(I,Rest) , stand(S,C,D,I), icecream(Tour, Rest).
-
+icecream([stand(S,C,D,I)], List) :- stand(S), city(C), ice(I), nonmember(S,List), nonmember(C,List), nonmember(I,List), stand(S,C,D,I).
+icecream([stand(S,C,D,I)|Tour], List) :- stand(S), city(C), ice(I), nonmember(S,List), nonmember(C,List), nonmember(I,List), stand(S,C,D,I), icecream(Tour, [S,C,I|List]).
 
 
 
