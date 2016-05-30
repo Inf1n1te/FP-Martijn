@@ -62,7 +62,10 @@ ice(coffeebean).
 % clue 1:
 stand(sally,rockland,_,_) :- !, fail.
 stand(_,_,thursday,peppermint) :- !, fail.
-
+% clue 3:
+solvestand(tom,_,D,peanutbutter) :- !, not(D=tuesday).
+% clue 4:
+solvestand(S,_,wednesday,coffeebean) :- !, not(S=alice).
 
 
 
@@ -71,7 +74,7 @@ stand(_,_,_,_).
 tour([stand(_,_,tuesday,_), stand(_,_,wednesday,_), stand(_,_,thursday,_), stand(_,_,friday,_)]).
 
 icecream([stand(S,C,D,I)], List) :- stand(S), city(C), ice(I), nonmember(S,List), nonmember(C,List), nonmember(I,List), stand(S,C,D,I).
-icecream([stand(S,C,D,I)|Tour], List) :- stand(S), city(C), ice(I), nonmember(S,List), nonmember(C,List), nonmember(I,List), stand(S,C,D,I), icecream(Tour, [S,C,I|List]).
+icecream([stand(S,C,D,I)|Tour], List) :- stand(S), city(C), ice(I), nonmember(S,List), nonmember(C,List), nonmember(I,List), stand(S,C,D,I), icecream(Tour, [S,C,I|List], sublist([shop(_,granite,_,_), shop)).
 
 
 
