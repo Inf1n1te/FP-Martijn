@@ -34,13 +34,15 @@ program2 = [(Atom "a", []),
 evalProp :: Program -> Query -> Bool
 evalProp [] _ 			= False
 evalProp _ []			= True
-evalProp program query@(queryAtomHead:queryAtoms) = head
-    [
-        evalProp program (clauseAtoms ++ queryAtoms) | 
-        clause@(clauseAtom, clauseAtoms) <- program,
+evalProp program query@(queryAtomHead:queryAtoms) | res == [] = False
+                                                  | otherwise = last res
+    where 
+        res = [
+            evalProp program (clauseAtoms ++ queryAtoms) | 
+            clause@(clauseAtom, clauseAtoms) <- program,
         
-        trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
+            trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
         
-        clauseAtom == queryAtomHead]
+            clauseAtom == queryAtomHead]
         
         
