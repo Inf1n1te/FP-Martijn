@@ -12,3 +12,7 @@ type Query		= [Atom]
 
 
 -- Functions
+evalProp :: Program -> Query -> Bool
+evalProp [] _ 			= False
+evalProp _ []			= True
+evalProp program query 	=
