@@ -10,6 +10,6 @@ defaultProgram =  [("a0",[]), ("a1",[]), ("a2",[]), ("b0", ["a0", "a1"]), ("b1",
 evalProp :: Program -> Program -> Expression -> Bool
 evalProp [] _ _			= False
 evalProp _ [] _			= False
-evalProp p (c@(e, n):cs) q	| e == q && n == []	= True
-				| e == q 		= all (== True) $ map (evalProp p p) n
-				| otherwise		= evalProp p cs q
+evalProp p (c@(e, n):cs) q	| e == q && n == []		= True
+							| e == q 				= all (== True) $ map (evalProp p p) n
+							| otherwise				= evalProp p cs q
