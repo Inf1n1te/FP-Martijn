@@ -32,7 +32,7 @@ instance Substitute Atom where
     _ <~ ((Constant _), _)
         = error "Cannot substitute a constant"
 
--- -- -- Programs -- -- --
+-- -- -- Test Data -- -- --
 program1 :: Program
 program1 = [
     (("p", Variable "X"), [("r", Constant "b"), ("s", Variable "X")]),
