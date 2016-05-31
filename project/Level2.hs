@@ -14,21 +14,30 @@ type Program        = [Clause]
 type Query          = [Atom]
 type Substitution   = (Term, Term)
 
--- Substitution operation in type classes
+{- Substitution operation in type classes
+
+Usage:
+Term/Atom <~ Substitution
+
+-}
 class Substitute a where
     (<~) :: a -> Substitution -> a
 
 instance Substitute Term where
+    -- Substitute a variable with a Term
     term <~ (original@(Variable _), replacement)
         | term == original  = replacement
         | otherwise         = term
+    -- Substitute a constant with a Term
     _ <~ ((Constant _), _)
         = error "Cannot substitute a constant"
 
 instance Substitute Atom where
+    -- Substitute a variable with a Term
     atom@(predicate, term) <~ (original@(Variable _), replacement)
         | term == original  = (predicate, replacement)
         | otherwise         = atom
+    -- Substitute a constant with a Term
     _ <~ ((Constant _), _)
         = error "Cannot substitute a constant"
 
@@ -46,7 +55,7 @@ program1 = [
     (("t", Constant "d"), [])]
 
 query1 :: Query
-query1 = [
+query1 = [ -- Desired output unknown
     ("p", Variable "X"),
     ("q", Variable "Y"),
     ("s", Variable "Z"),
@@ -91,18 +100,27 @@ varNames :: [String]
 varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
 
 
--- Unify function
+{- Unify function
+Finds a substitution to unify two atoms.
+
+Usage:
+unify Atom Atom
+-}
 unify :: Atom -> Atom -> Substitution
+-- Unification of two atoms with a constant term
 unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
     | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
     | firstConstant == secondConstant   = error "Already unified: equal constants"
     | otherwise                         = error "Cannot unify: nonequal constants"
+-- Unification of an atom with a variable term and an atom with a constant term
 unify (firstPredicate, variable@(Variable _)) (secondPredicate, constant@(Constant _))
     | firstPredicate == secondPredicate = (variable, constant)
     | otherwise                         = error "Cannot unify: nonequal predicates"
+-- Unification of an atom with a constant term and an atom with a variable term
 unify (firstPredicate, constant@(Constant _)) (secondPredicate, variable@(Variable _))
     | firstPredicate == secondPredicate = (variable, constant)
     | otherwise                         = error "Cannot unify: nonequal predicates"
+-- Unification of two atoms with a variable term
 unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVariable@(Variable _))
     | firstPredicate == secondPredicate = (secondVariable, firstVariable)
     | otherwise                         = error "Cannot unify: nonequal predicates"
