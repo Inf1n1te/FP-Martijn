@@ -41,7 +41,23 @@ rename
 
 varNames :: [String] 
 varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
+
+
 -- Unify function
+unify :: Atom -> Atom -> Substitution
+unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
+    | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
+    | firstConstant == secondConstant   = error "Already unified: equal constants"
+    | otherwise                         = error "Cannot unify: nonequal constants"
+unify (firstPredicate, variable@(Variable _)) (secondPredicate, constant@(Constant _))
+    | firstPredicate == secondPredicate = (variable, constant)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
+unify (firstPredicate, constant@(Constant _)) (secondPredicate, variable@(Variable _))
+    | firstPredicate == secondPredicate = (variable, constant)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
+unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVariable@(Variable _))
+    | firstPredicate == secondPredicate = (secondVariable, firstVariable)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
 
 -- evalOne function
 
