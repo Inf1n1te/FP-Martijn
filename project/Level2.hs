@@ -1,9 +1,9 @@
 module Level2 where
 
--- Imports
+-- -- -- Imports -- -- --
 
 
--- Data types
+-- -- -- Data types -- -- --
 data Term           = Constant String | Variable String
     deriving (Show, Eq)
 type Atom           = (String, Term)
@@ -14,7 +14,7 @@ type Substitution   = (Term, Term)
 
 -- Substitution operation in type classes
 
--- Functions
+-- -- -- Functions -- -- --
 
 -- Rename function
 rename :: Program -> Query -> Program
