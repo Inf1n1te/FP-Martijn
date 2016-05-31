@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Level2 where
 
 -- -- -- Imports -- -- --
@@ -13,6 +15,22 @@ type Query          = [Atom]
 type Substitution   = (Term, Term)
 
 -- Substitution operation in type classes
+class Substitute a where
+    (<~) :: a -> Substitution -> a
+
+instance Substitute Term where
+    term <~ (original@(Variable _), replacement)
+        | term == original  = replacement
+        | otherwise         = term
+    _ <~ ((Constant _), _)
+        = error "Cannot substitute a constant"
+
+instance Substitute Atom where
+    atom@(predicate, term) <~ (original@(Variable _), replacement)
+        | term == original  = (predicate, replacement)
+        | otherwise         = atom
+    _ <~ ((Constant _), _)
+        = error "Cannot substitute a constant"
 
 -- -- -- Functions -- -- --
 
