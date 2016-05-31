@@ -17,6 +17,11 @@ type Substitution   = (Term, Term)
 -- Functions
 
 -- Rename function
+rename :: Program -> Query -> Program
+rename 
+
+
+varnames :: [String] 
 
 -- Unify function
 
