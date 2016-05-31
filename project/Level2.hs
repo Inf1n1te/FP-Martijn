@@ -39,8 +39,8 @@ rename :: Program -> Query -> Program
 rename 
 
 
-varnames :: [String] 
-
+varNames :: [String] 
+varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
 -- Unify function
 
 -- evalOne function
