@@ -59,11 +59,17 @@ query1 = [
 
 
 -- Rename function
+
+-- |rename: Renames variables in the source program to fix variable collisions. 
+--  Arguments:
+--          Program: Program which needs the substitutions.
+--          Query: Query which may or may not contain duplicate used variables.
 rename :: Program -> Query -> Program
 rename program []       = program
 rename program query    = init $ foldl renameByAtom (program ++ [(("_query", Constant "a"), query)]) query
 -- TODO: include query as new clause to program and feed to renamebyatom, and use it to fold over program. Afterwards, do not forget to move 
 
+-- |renameByAtom: Renames the Program to fix any collision with the Atom.
 renameByAtom :: Program -> Atom -> Program
 renameByAtom program atom@(_, oldterm@(Variable _)) = 
     map (renameClause (oldterm, (Variable newstr))) program
@@ -74,6 +80,7 @@ renameByAtom program atom@(_, oldterm@(Variable _)) =
             renameClause subst (atom, atoms) = (atom <~ subst, map (<~ subst) atoms)
 renameByAtom program _ = program
 
+-- |getNewVarName: Retrieves a string found in [String] not found in any variable in the Program. 
 getNewVarName :: [String] -> Program -> String
 getNewVarName [] program            = error "No free name found in seed"
 getNewVarName (name:seed) program   | elem name (map getstr variables)  
@@ -87,6 +94,7 @@ getNewVarName (name:seed) program   | elem name (map getstr variables)
         clausevars  = (\((name, variable),atoms) -> variable : (map atomvars atoms) )
         atomvars    = (\(name, variable) -> variable)
 
+-- |varNames: Generates an infinite list like ["A","B",..,"AA","AB",..]
 varNames :: [String] 
 varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
 
