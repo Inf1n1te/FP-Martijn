@@ -7,11 +7,11 @@ import Debug.Trace
 
 -- Data types
 
-data Term		= Atom String
+data Term       = Atom String
     deriving (Show, Eq)
-type Clause		= (Term, [Term])
-type Program	= [Clause]
-type Query		= [Term]
+type Clause     = (Term, [Term])
+type Program    = [Clause]
+type Query      = [Term]
 
 
 -- Test programs
@@ -32,8 +32,8 @@ program2 = [(Atom "a", []),
 
 -- Functions
 evalProp :: Program -> Query -> Bool
-evalProp [] _ 			= False
-evalProp _ []			= True
+evalProp [] _           = False
+evalProp _ []           = True
 evalProp program query@(queryAtomHead:queryAtoms) | res == [] = False
                                                   | otherwise = True
     where 
@@ -41,7 +41,7 @@ evalProp program query@(queryAtomHead:queryAtoms) | res == [] = False
             | 
             clause@(clauseAtom, clauseAtoms) <- program,
         
-            trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
+            {-trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))-}
         
             clauseAtom == queryAtomHead,
             evalProp program (clauseAtoms ++ queryAtoms) ]
