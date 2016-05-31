@@ -42,23 +42,22 @@ instance Substitute Atom where
 -- Rename function
 rename :: Program -> Query -> Program
 rename program []       = program
-rename program query    = foldl renameByAtom (program ++ [(("_query", Constant "a"), query)]) query
+rename program query    = init $ foldl renameByAtom (program ++ [(("_query", Constant "a"), query)]) query
 -- TODO: include query as new clause to program and feed to renamebyatom, and use it to fold over program. Afterwards, do not forget to move 
 
 renameByAtom :: Program -> Atom -> Program
-renameByAtom program atom = 
-    where
-        name = foldl (getNewVarName varNames) program
-        
-        renameClause :: Clause -> (String, String) -> Clause
-        renameClause (atom, atoms) transform = (renameAtom)
-        renameAtom :: Atom -> (String, String) -> Atom
-        renameAtom
+renameByAtom program atom@(_, oldterm@(Variable _)) = 
+    map (renameClause (oldterm, (Variable newstr))) program
+        where
+            newstr = getNewVarName varNames program
+            
+            renameClause :: Substitution -> Clause -> Clause
+            renameClause subst (atom, atoms) = (atom <~ subst, map (<~ subst) atoms)
 
 getNewVarName :: [String] -> Program -> String
 getNewVarName [] program            = error "No free name found in seed"
 getNewVarName (name:seed) program   | elem name (map getstr variables)  
-                                        = getNewVarName program seed
+                                        = getNewVarName seed program 
                                     | otherwise
                                         = name
     where
