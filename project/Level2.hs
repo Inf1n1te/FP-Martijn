@@ -21,6 +21,11 @@ instance (<~) Term where
 -- -- -- Functions -- -- --
 
 -- Rename function
+rename :: Program -> Query -> Program
+rename 
+
+
+varnames :: [String] 
 
 -- Unify function
 
