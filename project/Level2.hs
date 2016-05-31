@@ -53,6 +53,9 @@ program1 = [
 
 -- -- -- Functions -- -- --
 
+
+
+
 -- Rename function
 rename :: Program -> Query -> Program
 rename program []       = program
@@ -67,6 +70,7 @@ renameByAtom program atom@(_, oldterm@(Variable _)) =
             
             renameClause :: Substitution -> Clause -> Clause
             renameClause subst (atom, atoms) = (atom <~ subst, map (<~ subst) atoms)
+renameByAtom program _ = program
 
 getNewVarName :: [String] -> Program -> String
 getNewVarName [] program            = error "No free name found in seed"
