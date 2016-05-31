@@ -5,11 +5,6 @@ module Level2 where
 -- -- -- Imports -- -- --
 
 
--- -- -- Test programs -- -- --
-
-prog1 :: Program
-prog1 = [(("a",Constant "v"),[]),(("b", Variable "A"),[("a", Variable "A")]),(("c", Variable "A"),[("b", Variable "A"),("a", Constant "v")])]
-
 -- -- -- Data types -- -- --
 data Term           = Constant String | Variable String
     deriving (Show, Eq)
@@ -49,6 +44,13 @@ program1 = [
     (("s", Constant "d"), []),
     (("t", Constant "b"), []),
     (("t", Constant "d"), [])]
+
+query1 :: Query
+query1 = [
+    ("p", Variable "X"),
+    ("q", Variable "Y"),
+    ("s", Variable "Z"),
+    ("p", Constant "a")]
 
 
 -- -- -- Functions -- -- --
