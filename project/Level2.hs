@@ -17,8 +17,9 @@ type Substitution   = (Term, Term)
 -- -- -- Functions -- -- --
 
 -- Rename function
-rename :: Program -> Query -> Program
-rename 
+--rename :: Program -> Query -> Program
+--rename program []           = program
+--rename program (atom:atoms) = 
 
 
 varNames :: [String] 
