@@ -13,6 +13,10 @@ type Query          = [Atom]
 type Substitution   = (Term, Term)
 
 -- Substitution operation in type classes
+class (<~) a where
+    (<~) :: a -> Substitution -> a
+instance (<~) Term where
+    term <~ substitution    = --stuff
 
 -- -- -- Functions -- -- --
 
