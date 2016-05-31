@@ -37,6 +37,20 @@ instance Substitute Atom where
     _ <~ ((Constant _), _)
         = error "Cannot substitute a constant"
 
+-- -- -- Test Data -- -- --
+program1 :: Program
+program1 = [
+    (("p", Variable "X"), [("r", Constant "b"), ("s", Variable "X")]),
+    (("q", Variable "Y"), [("r", Variable "Y"), ("t", Variable "Y")]),
+    (("r", Constant "a"), []),
+    (("r", Constant "b"), []),
+    (("r", Constant "c"), []),
+    (("s", Variable "Z"), [("r", Variable "Z")]),
+    (("s", Constant "d"), []),
+    (("t", Constant "b"), []),
+    (("t", Constant "d"), [])]
+
+
 -- -- -- Functions -- -- --
 
 -- Rename function
