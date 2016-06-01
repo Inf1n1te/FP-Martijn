@@ -140,7 +140,7 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 eval :: Program -> Query -> [Either Bool Substitution]
 eval [] _           = error "Empty program"
 eval _ []           = error "Empty query"
-eval program query  | null $ rightsRes      = res
+eval program query  | null $ rightsRes      = trim res
                     | otherwise             = rightsRes
     where
         res = evalOne (rename program query) query
@@ -173,8 +173,8 @@ evalOne program query@(queryAtomHead:queryAtoms)
 -- -- -- Test Data -- -- --
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("r", Variable "X"),
-    ("t", Variable "Y")]
+    ("q", Variable "X"),
+    ("p", Variable "X")]
 
 program1 :: Program
 program1 = [
