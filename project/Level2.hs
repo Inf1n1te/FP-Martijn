@@ -63,7 +63,10 @@ program1 = [
 
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("s", Variable "X")]
+    ("r", Variable "X"),
+    ("t", Variable "Y"),
+    ("s", Variable "Z")
+    ]
 
 
 -- -- -- Functions -- -- --
@@ -168,7 +171,7 @@ evalOne [] _ = [Left False]
 evalOne _ [] = [Left True]
 evalOne program query@(queryAtomHead:queryAtoms)
     | null res = [Left False]
-    | otherwise = map fst res ++ (concat $ map snd res)
+    | otherwise = foldr (\(f,s) a -> [f] ++ ( s) ++ a) [] res
     where
         res = [(Right unification, evals)|
             clause@(clauseAtom, clauseAtoms) <- program,
