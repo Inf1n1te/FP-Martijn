@@ -29,31 +29,24 @@ instance Substitute Term where
         | term == original  = replacement
         | otherwise         = term
     -- Substitute a constant with a Term
-    _ <~ ((Constant _), _)
-        = error "Cannot substitute a constant"
+    term <~ (original@(Constant _), replacement)
+        | term == original && original == replacement   = replacement
+        | original == replacement                       = term
+        | otherwise = error "Cannot substitute a constant"
 
 instance Substitute Atom where
     -- Substitute a variable with a Term
-    atom@(predicate, term) <~ (original@(Variable _), replacement)
-        | term == original  = (predicate, replacement)
-        | otherwise         = atom
-    -- Substitute a constant with a Term
-    _ <~ ((Constant _), _)
-        = error "Cannot substitute a constant"
-
-instance Substitute Clause where
-    -- Substitue a variable with a Term for all variables in a clause
-    (atom, atoms) <~ substitution@((Variable _), _)
-        = (atom <~ substitution, map (<~ substitution) atoms)
-    _ <~ ((Constant _), _)
-        = error "Cannot substitute a constant"
+    (predicate, term) <~ substitution = (predicate, term <~ substitution)
 
 instance Substitute [Atom] where
      -- Substitue a variable with a Term for all variables in a list of atoms
-    atoms <~ substitution@((Variable _), _)
-        = map (<~ substitution) atoms
-    _ <~ ((Constant _), _)
-        = error "Cannot substitute a constant"
+    atoms <~ substitution = map (<~ substitution) atoms
+
+instance Substitute Clause where
+    -- Substitue a variable with a Term for all variables in a clause
+    (atom, atoms) <~ substitution 
+        = (atom <~ substitution, atoms <~ substitution)
+
 
 -- -- -- Test Data -- -- --
 program1 :: Program
@@ -161,6 +154,13 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 (firstPredicate, (Variable _)) <?> (secondPredicate, (Variable _))
     | firstPredicate == secondPredicate = True
     | otherwise                         = False
+
+
+-- eval wrapper function
+eval :: Program -> Query -> [Either Bool Substitution]
+eval [] _           = error "Empty program"
+eval _ []           = error "Empty query"
+eval program query = evalOne (rename program query) query
 
 -- evalOne function
 evalOne :: Program -> Query -> [Either Bool Substitution]
