@@ -166,12 +166,15 @@ eval program query  | null $ rightsRes      = res
                     | otherwise             = rightsRes
     where
         res = evalOne (rename program query) query
-        noConstants = removeConstants res
+        noConstants = trim res
         rightsRes = filter (isRight) noConstants
-        removeConstants :: [Either Bool Substitution] -> [Either Bool Substitution]
-        removeConstants []                                      = []
-        removeConstants (x@(Right (Constant _, Constant _)):xs) = removeConstants xs
-        removeConstants (x:xs)                                  = x : (removeConstants xs)
+        vars = [x | let y = map (snd) query, x@(Variable _) <- y]
+        trim :: [Either Bool Substitution] -> [Either Bool Substitution]
+        trim []                 = []
+        trim (x@(Right (term@(Variable _), _)):xs)  
+            | elem term vars    = x : (trim xs)
+            | otherwise         = trim xs
+        trim (x:xs)             = trim xs
 
 -- evalOne function
 evalOne :: Program -> Query -> [Either Bool Substitution]
