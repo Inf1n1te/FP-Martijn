@@ -49,29 +49,7 @@ instance Substitute Clause where
         = (atom <~ substitution, atoms <~ substitution)
 
 
--- -- -- Test Data -- -- --
-program1 :: Program
-program1 = [
-    (("p", Variable "X"), [("r", Constant "b"), ("s", Variable "X")]),
-    (("q", Variable "Y"), [("r", Variable "Y"), ("t", Variable "Y")]),
-    (("r", Constant "a"), []),
-    (("r", Constant "b"), []),
-    (("r", Constant "c"), []),
-    (("s", Variable "Z"), [("r", Variable "Z")]),
-    (("s", Constant "d"), []),
-    (("t", Constant "b"), []),
-    (("t", Constant "d"), [])]
-
-query1 :: Query
-query1 = [ -- Desired output unknown
-    ("r", Variable "X"),
-    ("t", Variable "Y")]
-
-
 -- -- -- Functions -- -- --
-
-
-
 
 -- Rename function
 
@@ -191,3 +169,21 @@ evalOne program query@(queryAtomHead:queryAtoms)
             let evals = evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)), 
             evals /= [Left False]
             ]
+
+-- -- -- Test Data -- -- --
+query1 :: Query
+query1 = [ -- Desired output unknown
+    ("r", Variable "X"),
+    ("t", Variable "Y")]
+
+program1 :: Program
+program1 = [
+    (("p", Variable "X"), [("r", Constant "b"), ("s", Variable "X")]),
+    (("q", Variable "Y"), [("r", Variable "Y"), ("t", Variable "Y")]),
+    (("r", Constant "a"), []),
+    (("r", Constant "b"), []),
+    (("r", Constant "c"), []),
+    (("s", Variable "Z"), [("r", Variable "Z")]),
+    (("s", Constant "d"), []),
+    (("t", Constant "b"), []),
+    (("t", Constant "d"), [])]
