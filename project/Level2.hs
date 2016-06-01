@@ -182,11 +182,12 @@ evalOne [] _ = [Left False]
 evalOne _ [] = [Left True]
 evalOne program query@(queryAtomHead:queryAtoms)
     | null res = [Left False]
-    | otherwise = res
+    | otherwise = foldr (\(f,s) a -> [f] ++ ( s) ++ a) [] res
     where
-        res = [Right unification |
+        res = [(Right unification, evals)|
             clause@(clauseAtom, clauseAtoms) <- program,
             queryAtomHead <?> clauseAtom,
             let unification = unify queryAtomHead clauseAtom,
-            evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)) /= [Left False]
+            let evals = evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)), 
+            evals /= [Left False]
             ]
