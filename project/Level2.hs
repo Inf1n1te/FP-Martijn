@@ -167,7 +167,7 @@ evalOne program query@(queryAtomHead:queryAtoms)
         res = [(Right unification, evals)|
             clause@(clauseAtom, clauseAtoms) <- program,
         
-            trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
+--            trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
         
             queryAtomHead <?> clauseAtom,
             let unification = unify queryAtomHead clauseAtom,
