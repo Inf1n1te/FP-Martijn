@@ -41,6 +41,20 @@ instance Substitute Atom where
     _ <~ ((Constant _), _)
         = error "Cannot substitute a constant"
 
+instance Substitute Clause where
+    -- Substitue a variable with a Term for all variables in a clause
+    (atom, atoms) <~ substitution@((Variable _), _)
+        = (atom <~ substitution, map (<~ substitution) atoms)
+    _ <~ ((Constant _), _)
+        = error "Cannot substitute a constant"
+
+instance Substitute [Atom] where
+     -- Substitue a variable with a Term for all variables in a list of atoms
+    atoms <~ substitution@((Variable _), _)
+        = map (<~ substitution) atoms
+    _ <~ ((Constant _), _)
+        = error "Cannot substitute a constant"
+
 -- -- -- Test Data -- -- --
 program1 :: Program
 program1 = [
@@ -56,10 +70,8 @@ program1 = [
 
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("p", Variable "X"),
-    ("q", Variable "Y"),
-    ("s", Variable "Z"),
-    ("p", Constant "a")]
+    ("r", Variable "X"),
+    ("s", Constant "d")]
 
 
 -- -- -- Functions -- -- --
@@ -133,5 +145,35 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
     | firstPredicate == secondPredicate = (secondVariable, firstVariable)
     | otherwise                         = error "Cannot unify: nonequal predicates"
 
--- evalOne function
+(<?>) :: Atom -> Atom -> Bool
+(firstPredicate, firstConstant@(Constant _)) <?> (secondPredicate, secondConstant@(Constant _))
+    | firstPredicate /= secondPredicate = False
+    | firstConstant == secondConstant   = False
+    | otherwise                         = False
+-- Unification of an atom with a variable term and an atom with a constant term
+(firstPredicate, (Variable _)) <?> (secondPredicate, (Constant _))
+    | firstPredicate == secondPredicate = True
+    | otherwise                         = False
+-- Unification of an atom with a constant term and an atom with a variable term
+(firstPredicate, (Constant _)) <?> (secondPredicate, (Variable _))
+    | firstPredicate == secondPredicate = True
+    | otherwise                         = False
+-- Unification of two atoms with a variable term
+(firstPredicate, (Variable _)) <?> (secondPredicate, (Variable _))
+    | firstPredicate == secondPredicate = True
+    | otherwise                         = False
 
+-- evalOne function
+evalOne :: Program -> Query -> [Either Bool Substitution]
+evalOne [] _ = [Left False]
+evalOne _ [] = [Left True]
+evalOne program query@(queryAtomHead:queryAtoms)
+    | null res = [Left False]
+    | otherwise = res
+    where
+        res = [Right unification |
+            clause@(clauseAtom, clauseAtoms) <- program,
+            queryAtomHead <?> clauseAtom,
+            let unification = unify queryAtomHead clauseAtom,
+            evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)) /= [Left False]
+            ]
