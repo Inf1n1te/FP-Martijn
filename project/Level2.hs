@@ -123,7 +123,7 @@ unify :: Atom -> Atom -> Substitution
 -- Unification of two atoms with a constant term
 unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
     | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
-    | firstConstant == secondConstant   = error "Already unified: equal constants"
+    | firstConstant == secondConstant   = (firstConstant, secondConstant)
     | otherwise                         = error "Cannot unify: nonequal constants"
 -- Unification of an atom with a variable term and an atom with a constant term
 unify (firstPredicate, variable@(Variable _)) (secondPredicate, constant@(Constant _))
@@ -141,7 +141,7 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 (<?>) :: Atom -> Atom -> Bool
 (firstPredicate, firstConstant@(Constant _)) <?> (secondPredicate, secondConstant@(Constant _))
     | firstPredicate /= secondPredicate = False
-    | firstConstant == secondConstant   = False
+    | firstConstant == secondConstant   = True
     | otherwise                         = False
 -- Unification of an atom with a variable term and an atom with a constant term
 (firstPredicate, (Variable _)) <?> (secondPredicate, (Constant _))
