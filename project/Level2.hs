@@ -3,6 +3,7 @@
 module Level2 where
 
 -- -- -- Imports -- -- --
+import Data.Either
 
 
 -- -- -- Data types -- -- --
@@ -161,10 +162,16 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 eval :: Program -> Query -> [Either Bool Substitution]
 eval [] _           = error "Empty program"
 eval _ []           = error "Empty query"
-eval program query  | null $ rights res     = res
-                    | otherwise             = rights res
+eval program query  | null $ rightsRes      = res
+                    | otherwise             = rightsRes
     where
         res = evalOne (rename program query) query
+        noConstants = removeConstants res
+        rightsRes = filter (isRight) noConstants
+        removeConstants :: [Either Bool Substitution] -> [Either Bool Substitution]
+        removeConstants []                                      = []
+        removeConstants (x@(Right (Constant _, Constant _)):xs) = removeConstants xs
+        removeConstants (x:xs)                                  = x : (removeConstants xs)
 
 -- evalOne function
 evalOne :: Program -> Query -> [Either Bool Substitution]
