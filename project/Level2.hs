@@ -70,8 +70,7 @@ program1 = [
 
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("r", Variable "X"),
-    ("s", Constant "d")]
+    ("s", Variable "X")]
 
 
 -- -- -- Functions -- -- --
@@ -169,11 +168,12 @@ evalOne [] _ = [Left False]
 evalOne _ [] = [Left True]
 evalOne program query@(queryAtomHead:queryAtoms)
     | null res = [Left False]
-    | otherwise = res
+    | otherwise = map fst res ++ (concat $ map snd res)
     where
-        res = [Right unification |
+        res = [(Right unification, evals)|
             clause@(clauseAtom, clauseAtoms) <- program,
             queryAtomHead <?> clauseAtom,
             let unification = unify queryAtomHead clauseAtom,
-            evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)) /= [Left False]
+            let evals = evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)), 
+            evals /= [Left False]
             ]
