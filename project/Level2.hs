@@ -161,7 +161,10 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 eval :: Program -> Query -> [Either Bool Substitution]
 eval [] _           = error "Empty program"
 eval _ []           = error "Empty query"
-eval program query  = rights $ evalOne (rename program query) query
+eval program query  | null $ rights res     = res
+                    | otherwise             = rights res
+    where
+        res = evalOne (rename program query) query
 
 -- evalOne function
 evalOne :: Program -> Query -> [Either Bool Substitution]
