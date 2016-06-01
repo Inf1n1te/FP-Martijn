@@ -64,7 +64,7 @@ program1 = [
 query1 :: Query
 query1 = [ -- Desired output unknown
     ("r", Variable "X"),
-    ("s", Constant "d")]
+    ("t", Variable "Y")]
 
 
 -- -- -- Functions -- -- --
