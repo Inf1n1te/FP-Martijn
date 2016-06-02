@@ -15,6 +15,9 @@ type Substitution   = (Term, Term)
 
 -- Functions
 
+queryvars = [x | let y = concat $ map (snd) query, x@(Variable _) <- y]
+programvars = [x | let z = map (fst) program ++ concat $ map (snd) program, let y = concat $ map (snd) z, x@(Variable _) <- y]
+
 
 {- Substitution operation in type classes
 
@@ -56,7 +59,7 @@ instance Substitute Clause where
 instance Substitute Program where
     -- Substitute in a program
     program <~ substitution = map (<~ substitution) program
-    
+
 
 {- Unify function
 Finds a substitution to unify two atoms.
@@ -64,7 +67,14 @@ Finds a substitution to unify two atoms.
 Usage:
 unify Atom Atom
 -}
-unify :: Atom -> Atom -> Substitution
+unify :: Atom -> Atom -> [Substitution]
+
+
+
+
+
+
+
 -- Unification of two atoms with a constant term
 unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
     | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
