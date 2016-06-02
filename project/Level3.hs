@@ -1,7 +1,9 @@
+{-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
+
 module Level3 where
 
 -- Imports
-
+import Data.List
 
 -- Data types
 data Term           = Constant String | Variable String
@@ -54,5 +56,36 @@ instance Substitute Clause where
         = (atom <~ substitution, atoms <~ substitution)
 
 instance Substitute Program where
-	-- Substitute in a program
-	program <~ substitution = map (<~ substitution) program
+    -- Substitute in a program
+    program <~ substitution = map (<~ substitution) program
+
+-- -- -- -- - - -- -- -- --
+-- -- Rename function -- --
+-- -- -- -- - - -- -- -- --
+
+getSubstitutions :: Program -> Query -> [Substitution]
+getSubstitutions program query = zip (intersect programvars queryvars) newVarNames
+    where
+        programvars = 
+        queryvars   = [x | let y = concat $ map (snd) query, x@(Variable _) <- y]
+        newVarNames = getNewVarNames varNames (program ++ [(("_query", Constant "a"), query)])
+
+
+
+-- |getNewVarNames: Retrieves a list of strings found in [String] not found in any variable in the Program. 
+getNewVarNames :: [String] -> Program -> [String]
+getNewVarNames [] program            = error "No free name found in seed"
+getNewVarNames (name:seed) program   | elem name (map getstr variables)  
+                                        = getNewVarNames seed program 
+                                    | otherwise
+                                        = name ++ getNewVarNames seed program
+    where
+        getstr (Variable str) = str
+        getstr (Constant str) = str
+        variables   = concat $ map clausevars program
+        clausevars  = (\((name, variable),atoms) -> variable : (map atomvars atoms) )
+        atomvars    = (\(name, variable) -> variable)
+
+-- |varNames: Generates an infinite list like ["A","B",..,"AA","AB",..]
+varNames :: [String] 
+varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
