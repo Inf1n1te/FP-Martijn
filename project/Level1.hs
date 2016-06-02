@@ -1,8 +1,8 @@
 module Level1 where
 
-import Debug.Trace
 
 -- Imports
+import Debug.Trace
 
 
 -- Data types

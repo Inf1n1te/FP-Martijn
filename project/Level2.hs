@@ -178,8 +178,8 @@ evalOne program query@(queryAtomHead:queryAtoms)
 -- -- -- Test Data -- -- --
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("q", Variable "X"),
-    ("p", Variable "X")]
+    ("t", Constant "b"),
+    ("t", Constant "e")]
 
 program1 :: Program
 program1 = [
