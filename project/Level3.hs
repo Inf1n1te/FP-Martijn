@@ -18,7 +18,7 @@ type Substitution   = (Term, Term)
 -- -- -- Test Data -- -- --
 query1 :: Query
 query1 = [ -- Desired output unknown
-    ("p", [Variable "A", Variable "X"])
+    ("p", [Variable "X", Variable "Y"])
     ]
 
 program1 :: Program
