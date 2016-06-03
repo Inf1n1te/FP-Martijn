@@ -18,6 +18,7 @@ type Substitution   = (Term, Term)
 -- Functions
 
 
+
 {- Substitution operation in type classes
 
 Usage:
@@ -39,8 +40,8 @@ instance Substitute Term where
         | otherwise = error "Cannot substitute a constant"
 
 instance Substitute [Term] where
-	-- Substitute in a list of Terms
-	terms <~ substitution = map (<~ substitution) terms
+    -- Substitute in a list of Terms
+    terms <~ substitution = map (<~ substitution) terms
 
 instance Substitute Atom where
     -- Substitute a variable with a Term
@@ -89,3 +90,35 @@ getNewVarNames (name:seed) program   | elem name (map getstr variables)
 -- |varNames: Generates an infinite list like ["A","B",..,"AA","AB",..]
 varNames :: [String] 
 varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
+
+{- Unify function
+Finds a substitution to unify two atoms.
+
+Usage:
+unify Atom Atom
+-}
+unify :: Atom -> Atom -> [Substitution]
+
+
+
+
+
+
+
+-- Unification of two atoms with a constant term
+unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
+    | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
+    | firstConstant == secondConstant   = (firstConstant, secondConstant)
+    | otherwise                         = error "Cannot unify: nonequal constants"
+-- Unification of an atom with a variable term and an atom with a constant term
+unify (firstPredicate, variable@(Variable _)) (secondPredicate, constant@(Constant _))
+    | firstPredicate == secondPredicate = (variable, constant)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
+-- Unification of an atom with a constant term and an atom with a variable term
+unify (firstPredicate, constant@(Constant _)) (secondPredicate, variable@(Variable _))
+    | firstPredicate == secondPredicate = (variable, constant)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
+-- Unification of two atoms with a variable term
+unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVariable@(Variable _))
+    | firstPredicate == secondPredicate = (secondVariable, firstVariable)
+    | otherwise                         = error "Cannot unify: nonequal predicates"
