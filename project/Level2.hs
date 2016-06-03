@@ -145,7 +145,7 @@ evalOne _ []           = error "Empty query"
 evalOne program query  | null $ rightsRes      = filter (isLeft) res
                     | otherwise             = rightsRes
     where
-        res = evalOne (rename program query) query
+        res = eval (rename program query) query
         noConstants = trim res
         rightsRes = filter (isRight) noConstants
         vars = [x | let y = map (snd) query, x@(Variable _) <- y]
