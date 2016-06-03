@@ -1,0 +1,43 @@
+By Martijn Verkleij (s1466895) & Tim Kerkhoven (s1375253)
+
+Case 1:
+Level1.hs
+Usage: evalProp Program Query
+Two programs are provided in the form of program1 and program2.
+A query is provided in the form of query1.
+The following types are relevant for using this program:
+	data Term       = Atom String
+	type Clause     = (Term, [Term])
+	type Program    = [Clause]
+	type Query      = [Term]
+Example:
+	evalProp program1 [Atom "a", Atom "b"]
+
+Case 2:
+Level2.hs
+Usage: evalOne Program Query
+A program is provided in the form of program1.
+A query is provided in the form of query1.
+The following types are relevant for the usage:
+	data Term           = Constant String | Variable String
+	type Atom           = (String, Term)
+	type Clause         = (Atom, [Atom])
+	type Program        = [Clause]
+	type Query          = [Atom]
+	type Substitution   = (Term, Term)
+Example:
+	evalOne program1 [("t", Constant "b"), ("t", Constant "e")]
+
+Case 3:
+Level3.hs
+Usage: evalMulti Program Query
+Two programs are provided in the form of program1 and royalfamily.
+The following types are relevant for the usage:
+	data Term           = Constant String | Variable String
+	type Atom           = (String, [Term])
+	type Clause         = (Atom, [Atom])
+	type Program        = [Clause]
+	type Query          = [Atom]
+	type Substitution   = (Term, Term)
+Example:
+	evalMulti royalfamily [("grandfather", [Constant "bernhard", Variable "X"])]
