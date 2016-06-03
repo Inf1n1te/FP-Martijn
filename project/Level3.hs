@@ -206,7 +206,7 @@ evalMulti :: Program -> Query -> [Either Bool [Substitution]]
 evalMulti [] _              = error "Empty program"
 evalMulti _ []              = error "Empty query"
 evalMulti program query     | null $ rightsRes  = filter (isLeft) res
-                            | otherwise         = rightsRes {-= res-}
+                            | otherwise         = rightsRes
     where
         res = eval (rename program query) query
 
