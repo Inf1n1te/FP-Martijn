@@ -164,7 +164,7 @@ unify atom1 atom2
 _ <?> (_,[])          = False
 atom1 <?> atom2   
     | length (snd atom1) /= length (snd atom2)  = False
-    | otherwise                                 = all (True) $ unify' atom1 atom2
+    | otherwise                                 = all (==True) $ unify' atom1 atom2
     where
         unify' :: Atom -> Atom -> [Bool]
         unify' (_,[]) (_,[]) = []
@@ -231,6 +231,6 @@ eval program query@(queryAtomHead:queryAtoms)
         
             queryAtomHead <?> clauseAtom,
             let unification = unify queryAtomHead clauseAtom,
-            let evals = eval program ((map (<~ unification) clauseAtoms) ++ (map (<~ unification) queryAtoms), 
+            let evals = eval program ((foldl (<~) clauseAtoms unification) ++ (foldl (<~) queryAtoms unification)), 
             evals /= [Left False]
             ]
