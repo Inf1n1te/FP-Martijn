@@ -22,8 +22,10 @@ query1 = [ -- Desired output unknown
 
 program1 :: Program
 program1 = [
-    (("p", [Variable "X", Variable "Y"]), [("r", [Constant "b"]), ("s", [Variable "X"]), ("t", [Variable "Y"])]),
-    (("q", [Variable "Y"]), [("r", [Variable "Y"]), ("t", [Variable "Y"])]),
+    (("p", [Variable "X", Variable "Y"]), 
+        [("r", [Constant "b"]), ("s", [Variable "X"]), ("t", [Variable "Y"])]),
+    (("q", [Variable "Y", Variable "Z"]), 
+        [("r", [Variable "Z", Variable "Y"]), ("t", [Variable "Y"])]),
     (("r", [Constant "a"]), []),
     (("r", [Constant "b"]), []),
     (("r", [Constant "c"]), []),

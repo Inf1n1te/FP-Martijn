@@ -1,5 +1,5 @@
-p(X):-r(b),s(X).
-q(Y):-r(Y),t(Y).
+p(X,Y):-r(b),s(X),t(Y).
+q(Y,Z):-P(Z,Y),t(Y).
 r(a).
 r(b).
 r(c).
