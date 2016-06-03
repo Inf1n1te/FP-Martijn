@@ -123,42 +123,77 @@ unify :: Atom -> Atom -> [Substitution]
 unify (_,[]) _          = error "Cannot unify: empty atom"
 unify _ (_,[])          = error "Cannot unify: empty atom"
 unify atom1 atom2   
-    | length (snd atom1) /= length (snd atom2)    = error "Cannot unify: atoms of different lengths"
-    | otherwise                             = unify' atom1 atom2
-
-
-unify' :: Atom -> Atom -> [Substitution]
-unify' (_,[]) (_,[]) = []
-unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
-    | predicate1 /= predicate2  = error "Cannot unify: nonequal predicates"
-    | term1Head == term2Head    = unification : (unify' atom1 atom2)
-    | otherwise                 = error "Cannot unify: nonequal constants"
+    | length (snd atom1) /= length (snd atom2)  = error "Cannot unify: atoms of different lengths"
+    | otherwise                                 = unify' atom1 atom2
     where
-        unification             = (term1Head, term2Head)
-        atom1                   = (predicate1, term1Tail) <~ unification
-        atom2                   = (predicate2, term2Tail) <~ unification
-unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
-    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
-    | otherwise                 = error "Cannot unify: nonequal predicates"
+        unify' :: Atom -> Atom -> [Substitution]
+        unify' (_,[]) (_,[]) = []
+        unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+            | predicate1 /= predicate2  = error "Cannot unify: nonequal predicates"
+            | term1Head == term2Head    = unification : (unify' atom1 atom2)
+            | otherwise                 = error "Cannot unify: nonequal constants"
+            where
+                unification             = (term1Head, term2Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+            | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+            | otherwise                 = error "Cannot unify: nonequal predicates"
+            where
+                unification             = (term1Head, term2Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+            | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+            | otherwise                 = error "Cannot unify: nonequal predicates"
+            where
+                unification             = (term2Head, term1Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+            | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+            | otherwise                 = error "Cannot unify: nonequal predicates"
+            where
+                unification             = (term2Head, term1Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+
+
+(<?>) :: Atom -> Atom -> Bool
+(_,[]) <?> _          = False
+_ <?> (_,[])          = False
+atom1 <?> atom2   
+    | length (snd atom1) /= length (snd atom2)  = False
+    | otherwise                                 = all (True) $ unify' atom1 atom2
     where
-        unification             = (term1Head, term2Head)
-        atom1                   = (predicate1, term1Tail) <~ unification
-        atom2                   = (predicate2, term2Tail) <~ unification
-unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
-    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
-    | otherwise                 = error "Cannot unify: nonequal predicates"
-    where
-        unification             = (term2Head, term1Head)
-        atom1                   = (predicate1, term1Tail) <~ unification
-        atom2                   = (predicate2, term2Tail) <~ unification
-unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
-    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
-    | otherwise                 = error "Cannot unify: nonequal predicates"
-    where
-        unification             = (term2Head, term1Head)
-        atom1                   = (predicate1, term1Tail) <~ unification
-        atom2                   = (predicate2, term2Tail) <~ unification
-
-
-
-
+        unify' :: Atom -> Atom -> [Substitution]
+        unify' (_,[]) (_,[]) = []
+        unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+            | predicate1 /= predicate2  = False
+            | term1Head == term2Head    = True : (unify' atom1 atom2)
+            | otherwise                 = False
+            where
+                unification             = (term1Head, term2Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+            | predicate1 == predicate2  = True : (unify' atom1 atom2)
+            | otherwise                 = False
+            where
+                unification             = (term1Head, term2Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+            | predicate1 == predicate2  = True : (unify' atom1 atom2)
+            | otherwise                 = False
+            where
+                unification             = (term2Head, term1Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
+        unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+            | predicate1 == predicate2  = True : (unify' atom1 atom2)
+            | otherwise                 = False
+            where
+                unification             = (term2Head, term1Head)
+                atom1                   = (predicate1, term1Tail) <~ unification
+                atom2                   = (predicate2, term2Tail) <~ unification
