@@ -197,3 +197,8 @@ atom1 <?> atom2
                 unification             = (term2Head, term1Head)
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
+
+
+
+
+
