@@ -98,27 +98,41 @@ Usage:
 unify Atom Atom
 -}
 unify :: Atom -> Atom -> [Substitution]
+unify [] _          = error "Cannot unify: empty atom"
+unify _ []          = error "Cannot unify: empty atom"
+unify atom1 atom2   
+    | len (snd atom1) /= len (snd atom2)    = error "Cannot unify: atoms of different lengths"
+    | otherwise                             = unify' atom atom
 
 
-
-
-
-
-
--- Unification of two atoms with a constant term
-unify (firstPredicate, firstConstant@(Constant _)) (secondPredicate, secondConstant@(Constant _))
-    | firstPredicate /= secondPredicate = error "Cannot unify: nonequal predicates"
-    | firstConstant == secondConstant   = (firstConstant, secondConstant)
-    | otherwise                         = error "Cannot unify: nonequal constants"
--- Unification of an atom with a variable term and an atom with a constant term
-unify (firstPredicate, variable@(Variable _)) (secondPredicate, constant@(Constant _))
-    | firstPredicate == secondPredicate = (variable, constant)
-    | otherwise                         = error "Cannot unify: nonequal predicates"
--- Unification of an atom with a constant term and an atom with a variable term
-unify (firstPredicate, constant@(Constant _)) (secondPredicate, variable@(Variable _))
-    | firstPredicate == secondPredicate = (variable, constant)
-    | otherwise                         = error "Cannot unify: nonequal predicates"
--- Unification of two atoms with a variable term
-unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVariable@(Variable _))
-    | firstPredicate == secondPredicate = (secondVariable, firstVariable)
-    | otherwise                         = error "Cannot unify: nonequal predicates"
+unify' :: Atom -> Atom -> [Substitution]
+unify' [] [] = []
+unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+    | predicate1 /= predicate2  = error "Cannot unify: nonequal predicates"
+    | term1Head == term2Head    = unification : (unify' atom1 atom2)
+    | otherwise                 = error "Cannot unify: nonequal constants"
+    where
+        unification             = (term1Head, term2Head)
+        atom1                   = (predicate1, term1Tail) <~ unification
+        atom2                   = (predicate2, term2Tail) <~ unification
+unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
+    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+    | otherwise                 = error "Cannot unify: nonequal predicates"
+    where
+        unification             = (term1Head, term2Head)
+        atom1                   = (predicate1, term1Tail) <~ unification
+        atom2                   = (predicate2, term2Tail) <~ unification
+unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+    | otherwise                 = error "Cannot unify: nonequal predicates"
+    where
+        unification             = (term2Head, term1Head)
+        atom1                   = (predicate1, term1Tail) <~ unification
+        atom2                   = (predicate2, term2Tail) <~ unification
+unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
+    | predicate1 == predicate2  = unification : (unify' atom1 atom2)
+    | otherwise                 = error "Cannot unify: nonequal predicates"
+    where
+        unification             = (term2Head, term1Head)
+        atom1                   = (predicate1, term1Tail) <~ unification
+        atom2                   = (predicate2, term2Tail) <~ unification
