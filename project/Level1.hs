@@ -29,6 +29,8 @@ program2 = [(Atom "a", []),
             (Atom "c", [Atom "d"]),
             (Atom "d", [Atom "f"]),
             (Atom "e", [])]
+            
+query1   = [Atom "a", Atom "b"]
 
 -- Functions
 evalProp :: Program -> Query -> Bool
