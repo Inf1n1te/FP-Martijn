@@ -16,6 +16,8 @@ type Query          = [Atom]
 type Substitution   = (Term, Term)
 
 -- -- -- Test Data -- -- --
+-- taken from Level2, with a few changes
+
 query1 :: Query
 query1 = [ -- Desired output unknown
     ("p", [Variable "X", Variable "Y"])
@@ -24,7 +26,7 @@ query1 = [ -- Desired output unknown
 program1 :: Program
 program1 = [
     (("p", [Variable "X", Variable "Y"]), 
-        [("r", [Constant "b"]), ("s", [Variable "X"]), ("t", [Variable "Y"])]),
+        [("r", [Constant "b"]), ("s", [Variable "X"]), ("t", [Variable "X"])]),
     (("q", [Variable "Y", Variable "Z"]), 
         [("r", [Variable "Z", Variable "Y"]), ("t", [Variable "Y"])]),
     (("r", [Constant "a"]), []),
@@ -35,6 +37,59 @@ program1 = [
     (("t", [Constant "b"]), []),
     (("t", [Constant "d"]), [])]
 
+
+-- Royal Family example, where any clauses with a not() statements
+--  have been omitted.
+
+royalfamily :: Program
+royalfamily = [
+
+    (("mother",[Constant "emma",Constant "wilhelmina"]), []),
+    (("mother",[Constant "wilhelmina",Constant "juliana"]), []),
+    (("mother",[Constant "juliana",Constant "beatrix"]), []),
+    (("mother",[Constant "juliana",Constant "margriet"]), []),
+    (("mother",[Constant "juliana",Constant "irene"]), []),
+    (("mother",[Constant "juliana",Constant "christina"]), []),
+    (("mother",[Constant "margriet",Constant "maurits"]), []),
+    (("mother",[Constant "margriet",Constant "bernhard_jr"]), []),
+    (("mother",[Constant "margriet",Constant "pieter_christiaan"]), []),
+    (("mother",[Constant "margriet",Constant "floris"]), []),
+    (("mother",[Constant "beatrix",Constant "alexander"]), []),
+    (("mother",[Constant "beatrix",Constant "friso"]), []),
+    (("mother",[Constant "beatrix",Constant "constantijn"]), []),
+    (("mother",[Constant "maxima",Constant "amalia"]), []),
+    (("mother",[Constant "maxima",Constant "alexia"]), []),
+    (("mother",[Constant "maxima",Constant "ariane"]), []),
+
+    (("husband",[Constant "bernhard",Constant "juliana"]), []),
+    (("husband",[Constant "claus",Constant "beatrix"]), []),
+    (("husband",[Constant "pieter",Constant "margriet"]), []),
+    (("husband",[Constant "alexander",Constant "maxima"]), []),
+    (("husband",[Constant "friso",Constant "mabel"]), []),
+    (("husband",[Constant "constantijn",Constant "laurentien"]), []),
+
+
+    (("female",[Constant "irene"]), []),
+    (("female",[Constant "christina"]), []),
+    (("female",[Constant "amalia"]), []),
+    (("female",[Constant "alexia"]), []),
+    (("female",[Constant "ariane"]), []),
+    (("female",[Variable "X"]), [("mother", [Variable "X",Variable "_"])]),
+    (("female",[Variable "X"]), [("husband",[Variable "_",Variable "X"])]),
+
+    (("male",[Constant "maurits"]), []),
+    (("male",[Constant "bernhard_jr"]), []),
+    (("male",[Constant "pieter_christiaan"]), []),
+    (("male",[Constant "floris"]), []),
+    (("male",[Variable "X"]), [("husband", [Variable "X", Variable "_"])]),
+
+    (("father", [Variable "X", Variable "Y"]), [("husband", [Variable "X", Variable "Z"]), ("mother", [Variable "Z", Variable "Y"])]),
+    (("child", [Variable "X", Variable "Y"]), [("father", [Variable "Y", Variable "X"])]),
+    (("child", [Variable "X", Variable "Y"]), [("mother", [Variable "Y", Variable "X"])]),
+
+    (("grandfather", [Variable "X", Variable "Y"]), [("child", [Variable "Y", Variable "Z"]), ("father", [Variable "X", Variable "Z"])])
+
+    ]
 
 
 -- Functions
@@ -85,6 +140,12 @@ instance Substitute Program where
 -- -- -- -- - - -- -- -- --
 -- -- Rename function -- --
 -- -- -- -- - - -- -- -- --
+
+-- |rename: Renames variables in the source program to fix variable collisions. 
+--          This one uses substitutions.
+--  Arguments:
+--          Program: Program which needs the substitutions.
+--          Query: Query which may or may not contain duplicate used variables.
 
 rename :: Program -> Query -> Program
 rename program query    = foldl (<~) program (getSubstitutions program query)
