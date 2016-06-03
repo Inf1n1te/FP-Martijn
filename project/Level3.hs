@@ -65,21 +65,21 @@ instance Substitute Program where
 -- -- -- -- - - -- -- -- --
 
 getSubstitutions :: Program -> Query -> [Substitution]
-getSubstitutions program query = zip (intersect programvars queryvars) newVarNames
+getSubstitutions program query = zip (nub $ intersect programvars queryvars) (map (\x -> Variable x) newVarNames)
     where
-        programvars = 
+        programvars = [x | let z = (map (fst) program) ++ (concat $ map (snd) program), let y = concat $ map (snd) z, x@(Variable _) <- y]
         queryvars   = [x | let y = concat $ map (snd) query, x@(Variable _) <- y]
-        newVarNames = getNewVarNames varNames (program ++ [(("_query", Constant "a"), query)])
+        newVarNames = getNewVarNames varNames (program ++ [(("_query", [Constant "a"]), query)])
 
 
 
 -- |getNewVarNames: Retrieves a list of strings found in [String] not found in any variable in the Program. 
 getNewVarNames :: [String] -> Program -> [String]
 getNewVarNames [] program            = error "No free name found in seed"
-getNewVarNames (name:seed) program   | elem name (map getstr variables)  
+getNewVarNames (name:seed) program   | elem name (map getstr $ concat variables)  
                                         = getNewVarNames seed program 
                                     | otherwise
-                                        = name ++ getNewVarNames seed program
+                                        = name : getNewVarNames seed program
     where
         getstr (Variable str) = str
         getstr (Constant str) = str
@@ -98,15 +98,15 @@ Usage:
 unify Atom Atom
 -}
 unify :: Atom -> Atom -> [Substitution]
-unify [] _          = error "Cannot unify: empty atom"
-unify _ []          = error "Cannot unify: empty atom"
+unify (_,[]) _          = error "Cannot unify: empty atom"
+unify _ (_,[])          = error "Cannot unify: empty atom"
 unify atom1 atom2   
-    | len (snd atom1) /= len (snd atom2)    = error "Cannot unify: atoms of different lengths"
-    | otherwise                             = unify' atom atom
+    | length (snd atom1) /= length (snd atom2)    = error "Cannot unify: atoms of different lengths"
+    | otherwise                             = unify' atom1 atom2
 
 
 unify' :: Atom -> Atom -> [Substitution]
-unify' [] [] = []
+unify' (_,[]) (_,[]) = []
 unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
     | predicate1 /= predicate2  = error "Cannot unify: nonequal predicates"
     | term1Head == term2Head    = unification : (unify' atom1 atom2)
