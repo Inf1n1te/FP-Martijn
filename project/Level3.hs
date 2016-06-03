@@ -14,6 +14,25 @@ type Program        = [Clause]
 type Query          = [Atom]
 type Substitution   = (Term, Term)
 
+-- -- -- Test Data -- -- --
+query1 :: Query
+query1 = [ -- Desired output unknown
+    ("t", [Constant "b"]),
+    ("s", [Variable "X"])]
+
+program1 :: Program
+program1 = [
+    (("p", [Variable "X"]), [("r", [Constant "b"]), ("s", [Variable "X"])]),
+    (("q", [Variable "Y"]), [("r", [Variable "Y"]), ("t", [Variable "Y"])]),
+    (("r", [Constant "a"]), []),
+    (("r", [Constant "b"]), []),
+    (("r", [Constant "c"]), []),
+    (("s", [Variable "Z"]), [("r", [Variable "Z"])]),
+    (("s", [Constant "d"]), []),
+    (("t", [Constant "b"]), []),
+    (("t", [Constant "d"]), [])]
+
+
 
 -- Functions
 
@@ -63,6 +82,9 @@ instance Substitute Program where
 -- -- -- -- - - -- -- -- --
 -- -- Rename function -- --
 -- -- -- -- - - -- -- -- --
+
+rename :: Program -> Query -> Program
+rename program query    = foldl (<~) program (getSubstitutions program query)
 
 getSubstitutions :: Program -> Query -> [Substitution]
 getSubstitutions program query = zip (nub $ intersect programvars queryvars) (map (\x -> Variable x) newVarNames)
@@ -136,3 +158,7 @@ unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@
         unification             = (term2Head, term1Head)
         atom1                   = (predicate1, term1Tail) <~ unification
         atom2                   = (predicate2, term2Tail) <~ unification
+
+
+
+
