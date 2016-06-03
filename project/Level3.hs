@@ -227,6 +227,7 @@ evalMulti program query     | null $ rightsRes  = filter (isLeft) res
         trim' (x@(term1@(Variable _), (Constant _)):xs)
             | elem term1 vars   = x : (trim' xs)
             | otherwise         = trim' xs
+        trim' (_:xs)            = trim' xs
 
 -- eval function
 eval :: Program -> Query -> [Either Bool [Substitution]]
