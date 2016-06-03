@@ -164,41 +164,73 @@ unify atom1 atom2
 _ <?> (_,[])          = False
 atom1 <?> atom2   
     | length (snd atom1) /= length (snd atom2)  = False
-    | otherwise                                 = all (True) $ unify' atom1 atom2
+    | otherwise                                 = all (==True) $ unify' atom1 atom2
     where
-        unify' :: Atom -> Atom -> [Substitution]
+        unify' :: Atom -> Atom -> [Bool]
         unify' (_,[]) (_,[]) = []
         unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
-            | predicate1 /= predicate2  = False
+            | predicate1 /= predicate2  = [False]
             | term1Head == term2Head    = True : (unify' atom1 atom2)
-            | otherwise                 = False
+            | otherwise                 = [False]
             where
                 unification             = (term1Head, term2Head)
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
         unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Constant _):term2Tail))
             | predicate1 == predicate2  = True : (unify' atom1 atom2)
-            | otherwise                 = False
+            | otherwise                 = [False]
             where
                 unification             = (term1Head, term2Head)
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
         unify' (predicate1, (term1Head@(Constant _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
             | predicate1 == predicate2  = True : (unify' atom1 atom2)
-            | otherwise                 = False
+            | otherwise                 = [False]
             where
                 unification             = (term2Head, term1Head)
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
         unify' (predicate1, (term1Head@(Variable _):term1Tail)) (predicate2, (term2Head@(Variable _):term2Tail))
             | predicate1 == predicate2  = True : (unify' atom1 atom2)
-            | otherwise                 = False
+            | otherwise                 = [False]
             where
                 unification             = (term2Head, term1Head)
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
 
+-- evalMulti wrapper function
+evalMulti :: Program -> Query -> [Either Bool [Substitution]]
+evalMulti [] _              = error "Empty program"
+evalMulti _ []              = error "Empty query"
+evalMulti program query     {-| null $ rightsRes  = filter (isLeft) res
+                            | otherwise         = rightsRes-} = res
+    where
+        res = eval (rename program query) query
+        {-trimmed = trim res
+        rightsRes = filter (isRight) trimmed
+        vars = [x | let y = map (snd) query, x@(Variable _) <- y]
+        trim :: [Either Bool Substitution] -> [Either Bool Substitution]
+        trim []                 = []
+        trim (x@(Right (term@(Variable _), _)):xs)  
+            | elem term vars    = x : (trim xs)
+            | otherwise         = trim xs
+        trim (x:xs)             = trim xs-}
 
-
-
-
+-- eval function
+eval :: Program -> Query -> [Either Bool [Substitution]]
+eval [] _ = [Left False]
+eval _ [] = [Left True]
+eval program query@(queryAtomHead:queryAtoms)
+    | null res = [Left False]
+    | otherwise = foldr (\(f,s) a -> [f] ++ ( s) ++ a) [] res
+    where
+        res = [(Right unification, evals)|
+            clause@(clauseAtom, clauseAtoms) <- program,
+        
+--            trace ("query: "++ (show queryAtomHead) ++ " -> " ++ (show queryAtoms) ++ " rule: " ++ (show clauseAtom) ++ " -> "++ (show clauseAtoms))
+        
+            queryAtomHead <?> clauseAtom,
+            let unification = unify queryAtomHead clauseAtom,
+            let evals = eval program ((foldl (<~) clauseAtoms unification) ++ (foldl (<~) queryAtoms unification)), 
+            evals /= [Left False]
+            ]
