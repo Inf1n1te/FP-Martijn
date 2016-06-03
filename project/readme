@@ -41,3 +41,9 @@ The following types are relevant for the usage:
 	type Substitution   = (Term, Term)
 Example:
 	evalMulti royalfamily [("grandfather", [Constant "bernhard", Variable "X"])]
+
+Example:
+	evalMulti royalfamily [("female", [Constant "beatrix"])]
+Result:
+	[Left True,Left True,Left True,Left True]
+The result gives four times True, because there are four different ways of deciding Beatrix is female: she is the mother of three people, and the wife of Claus.
