@@ -96,45 +96,46 @@ royalfamily = [
 
 
 
-{- Substitution operation in type classes
+{-|
+Substitution operation in type classes
 
 Usage:
-Term/Atom <~ Substitution
+a <~ Substitution
 
 -}
 class Substitute a where
     (<~) :: a -> Substitution -> a
 
 instance Substitute Term where
-    -- Substitute a variable with a Term
+    -- | Substitute a variable with a Term
     term <~ (original@(Variable _), replacement)
         | term == original  = replacement
         | otherwise         = term
-    -- Substitute a constant with a Term
+    -- | Substitute a constant with a Term
     term <~ (original@(Constant _), replacement)
         | term == original && original == replacement   = replacement
         | original == replacement                       = term
         | otherwise = error "Cannot substitute a constant"
 
 instance Substitute [Term] where
-    -- Substitute in a list of Terms
+    -- | Substitute in a list of Terms
     terms <~ substitution = map (<~ substitution) terms
 
 instance Substitute Atom where
-    -- Substitute a variable with a Term
+    -- | Substitute in an Atom
     (predicate, terms) <~ substitution = (predicate, terms <~ substitution)
 
 instance Substitute [Atom] where
-     -- Substitute a variable with a Term for all variables in a list of atoms
+    -- | Substitute in a list of Atoms
     atoms <~ substitution = map (<~ substitution) atoms
 
 instance Substitute Clause where
-    -- Substitute a variable with a Term for all variables in a clause
+    -- | Substitute in a Clause
     (atom, atoms) <~ substitution 
         = (atom <~ substitution, atoms <~ substitution)
 
 instance Substitute Program where
-    -- Substitute in a program
+    -- | Substitute in a Program
     program <~ substitution = map (<~ substitution) program
 
 -- -- -- -- - - -- -- -- --
@@ -177,8 +178,9 @@ getNewVarNames (name:seed) program   | elem name (map getstr $ concat variables)
 varNames :: [String] 
 varNames = [empty ++ [abc] | empty <- "" : varNames, abc <- ['A'..'Z']]
 
-{- Unify function
-Finds a substitution to unify two atoms.
+{-|
+Unify function
+Finds a list of substitutions to unify two atoms.
 
 Usage:
 unify Atom Atom
@@ -222,7 +224,13 @@ unify atom1 atom2
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
 
+{-|
+Can unify function
+Determines if a function can be unified.
 
+Usage:
+unify Atom Atom
+-}
 (<?>) :: Atom -> Atom -> Bool
 (_,[]) <?> _          = False
 _ <?> (_,[])          = False
@@ -262,7 +270,10 @@ atom1 <?> atom2
                 atom1                   = (predicate1, term1Tail) <~ unification
                 atom2                   = (predicate2, term2Tail) <~ unification
 
--- evalMulti wrapper function
+{-|
+evalMulti wrapper function
+renames the input and trims the output
+-}
 evalMulti :: Program -> Query -> [Either Bool [Substitution]]
 evalMulti [] _              = error "Empty program"
 evalMulti _ []              = error "Empty query"
@@ -290,7 +301,10 @@ evalMulti program query     | null $ rightsRes  = filter (isLeft) res
             | otherwise         = trim' xs
         trim' (_:xs)            = trim' xs
 
--- eval function
+{-|
+eval function
+evaluates the input
+-}
 eval :: Program -> Query -> [Either Bool [Substitution]]
 eval [] _ = [Left False]
 eval _ [] = [Left True]

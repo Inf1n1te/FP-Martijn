@@ -140,10 +140,10 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
 
 -- evalOne wrapper function
 evalOne :: Program -> Query -> [Either Bool Substitution]
-evalOne [] _           = error "Empty program"
-evalOne _ []           = error "Empty query"
-evalOne program query  | null $ rightsRes      = filter (isLeft) res
-                    | otherwise             = rightsRes
+evalOne [] _            = error "Empty program"
+evalOne _ []            = error "Empty query"
+evalOne program query   | null $ rightsRes      = filter (isLeft) res
+                        | otherwise             = rightsRes
     where
         res = eval (rename program query) query
         noConstants = trim res
