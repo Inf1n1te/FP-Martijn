@@ -138,11 +138,11 @@ unify (firstPredicate, firstVariable@(Variable _)) (secondPredicate, secondVaria
     | otherwise                         = False
 
 
--- eval wrapper function
-eval :: Program -> Query -> [Either Bool Substitution]
-eval [] _           = error "Empty program"
-eval _ []           = error "Empty query"
-eval program query  | null $ rightsRes      = filter (isLeft) res
+-- evalOne wrapper function
+evalOne :: Program -> Query -> [Either Bool Substitution]
+evalOne [] _           = error "Empty program"
+evalOne _ []           = error "Empty query"
+evalOne program query  | null $ rightsRes      = filter (isLeft) res
                     | otherwise             = rightsRes
     where
         res = evalOne (rename program query) query
@@ -156,11 +156,11 @@ eval program query  | null $ rightsRes      = filter (isLeft) res
             | otherwise         = trim xs
         trim (x:xs)             = trim xs
 
--- evalOne function
-evalOne :: Program -> Query -> [Either Bool Substitution]
-evalOne [] _ = [Left False]
-evalOne _ [] = [Left True]
-evalOne program query@(queryAtomHead:queryAtoms)
+-- eval function
+eval :: Program -> Query -> [Either Bool Substitution]
+eval [] _ = [Left False]
+eval _ [] = [Left True]
+eval program query@(queryAtomHead:queryAtoms)
     | null res = [Left False]
     | otherwise = foldr (\(f,s) a -> [f] ++ ( s) ++ a) [] res
     where
@@ -171,7 +171,7 @@ evalOne program query@(queryAtomHead:queryAtoms)
         
             queryAtomHead <?> clauseAtom,
             let unification = unify queryAtomHead clauseAtom,
-            let evals = evalOne program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)), 
+            let evals = eval program ((clauseAtoms <~ unification) ++ (queryAtoms <~ unification)), 
             evals /= [Left False]
             ]
 
