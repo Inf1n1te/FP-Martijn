@@ -202,19 +202,22 @@ atom1 <?> atom2
 evalMulti :: Program -> Query -> [Either Bool [Substitution]]
 evalMulti [] _              = error "Empty program"
 evalMulti _ []              = error "Empty query"
-evalMulti program query     {-| null $ rightsRes  = filter (isLeft) res
-                            | otherwise         = rightsRes-} = res
+evalMulti program query     | null $ rightsRes  = filter (isLeft) res
+                            | otherwise         = rightsRes {-= res-}
     where
         res = eval (rename program query) query
-        {-trimmed = trim res
+
+        trimmed = trim res
         rightsRes = filter (isRight) trimmed
-        vars = [x | let y = map (snd) query, x@(Variable _) <- y]
-        trim :: [Either Bool Substitution] -> [Either Bool Substitution]
+        vars = [x | let y = concat $ map (snd) query, x@(Variable _) <- y]
+        trim :: [Either Bool [Substitution]] -> [Either Bool [Substitution]]
         trim []                 = []
         trim (x@(Right (term@(Variable _), _)):xs)  
             | elem term vars    = x : (trim xs)
             | otherwise         = trim xs
-        trim (x:xs)             = trim xs-}
+        trim (x:xs)             = trim xs
+
+        trim' :: [Substitution] -> [Substitution]
 
 -- eval function
 eval :: Program -> Query -> [Either Bool [Substitution]]
