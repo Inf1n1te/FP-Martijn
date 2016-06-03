@@ -4,6 +4,7 @@ module Level3 where
 
 -- Imports
 import Data.List
+import Data.Either
 
 -- Data types
 data Term           = Constant String | Variable String
@@ -211,13 +212,19 @@ evalMulti program query     | null $ rightsRes  = filter (isLeft) res
         rightsRes = filter (isRight) trimmed
         vars = [x | let y = concat $ map (snd) query, x@(Variable _) <- y]
         trim :: [Either Bool [Substitution]] -> [Either Bool [Substitution]]
-        trim []                 = []
-        trim (x@(Right (term@(Variable _), _)):xs)  
-            | elem term vars    = x : (trim xs)
-            | otherwise         = trim xs
-        trim (x:xs)             = trim xs
+        trim []             = []
+        trim ((Right x):xs) | null $ trim' x    = trim xs
+                            | otherwise         = Right (trim' x) : trim xs
+        trim ((Left x):xs)  = trim xs
 
         trim' :: [Substitution] -> [Substitution]
+        trim' [] = []
+        trim' (x@(term1@(Variable _), term2@(Variable _)):xs)
+            | elem term1 vars && elem term2 vars    = x : (trim' xs)
+            | otherwise                             = trim' xs
+        trim' (x@(term1@(Variable _), (Constant _)):xs)
+            | elem term1 vars   = x : (trim' xs)
+            | otherwise         = trim' xs
 
 -- eval function
 eval :: Program -> Query -> [Either Bool [Substitution]]
